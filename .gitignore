@@ -1,0 +1,11 @@
+node_modules
+dist
+data/contact-submissions.json
+.superpowers
+chrome-profile-*
+home-*.png
+.env
+.env.*
+!.env.example
+*.log
+release/
