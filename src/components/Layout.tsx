@@ -1,7 +1,9 @@
-import { MapPin, Menu, Phone, X } from "lucide-react";
-import { useState } from "react";
+import { LogOut, MapPin, Menu, Phone, UserRound, X } from "lucide-react";
+import { useEffect, useState } from "react";
 import { Link, NavLink, Outlet } from "react-router-dom";
 import { contactDetails } from "../content/contactDetails";
+import { readStoredUserSession, storeUserSession, userSessionChangedEvent } from "../content/dashboardUsers";
+import type { DashboardUserSession } from "../types";
 import { LogoMark } from "./LogoMark";
 
 const links = [
@@ -16,6 +18,23 @@ const links = [
 
 export function Layout() {
   const [open, setOpen] = useState(false);
+  const [userSession, setUserSession] = useState<DashboardUserSession | null>(null);
+
+  useEffect(() => {
+    const syncUserSession = () => setUserSession(readStoredUserSession());
+    syncUserSession();
+    window.addEventListener(userSessionChangedEvent, syncUserSession);
+    window.addEventListener("storage", syncUserSession);
+    return () => {
+      window.removeEventListener(userSessionChangedEvent, syncUserSession);
+      window.removeEventListener("storage", syncUserSession);
+    };
+  }, []);
+
+  const handleUserLogout = () => {
+    storeUserSession(null);
+    setOpen(false);
+  };
 
   return (
     <div className="site-shell">
@@ -23,9 +42,22 @@ export function Layout() {
         <Link className="brand logo-only" to="/" onClick={() => setOpen(false)} aria-label="TableCraft Solutions home">
           <LogoMark />
         </Link>
-        <button className="nav-toggle" type="button" aria-label="Toggle navigation" onClick={() => setOpen((value) => !value)}>
-          {open ? <X size={22} /> : <Menu size={22} />}
-        </button>
+        <div className="header-actions">
+          {userSession && (
+            <div className="user-badge" aria-label={`Logged in as ${userSession.firstName}`}>
+              <Link to="/dashboard" onClick={() => setOpen(false)}>
+                <UserRound size={16} />
+                <span>{userSession.firstName}</span>
+              </Link>
+              <button type="button" onClick={handleUserLogout} aria-label="Sign out user">
+                <LogOut size={15} />
+              </button>
+            </div>
+          )}
+          <button className="nav-toggle" type="button" aria-label="Toggle navigation" onClick={() => setOpen((value) => !value)}>
+            {open ? <X size={22} /> : <Menu size={22} />}
+          </button>
+        </div>
         <nav className={open ? "site-nav open" : "site-nav"} aria-label="Main navigation">
           {links.map((link) => (
             <NavLink key={link.to} to={link.to} onClick={() => setOpen(false)}>

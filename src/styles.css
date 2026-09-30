@@ -2456,3 +2456,80 @@ svg {
     width: 100%;
   }
 }
+
+/* Logged-in user indicator */
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.user-badge {
+  display: inline-flex;
+  align-items: center;
+  overflow: hidden;
+  border: 1px solid rgba(0, 61, 70, 0.12);
+  border-radius: 999px;
+  background: #fff;
+  box-shadow: 0 10px 24px rgba(0, 61, 70, 0.08);
+}
+
+.user-badge a,
+.user-badge button {
+  display: inline-flex;
+  min-height: 38px;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border: 0;
+  background: transparent;
+  color: var(--teal-950);
+  font-weight: 900;
+}
+
+.user-badge a {
+  padding: 0 12px;
+}
+
+.user-badge button {
+  width: 38px;
+  border-left: 1px solid var(--line);
+  cursor: pointer;
+}
+
+.user-badge svg {
+  color: var(--amber-dark);
+}
+
+.form-actions-inline {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+@media (max-width: 860px) {
+  .header-actions {
+    margin-left: auto;
+  }
+
+  .user-badge a {
+    max-width: 138px;
+  }
+
+  .user-badge span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 420px) {
+  .user-badge a {
+    max-width: 104px;
+    padding: 0 9px;
+  }
+
+  .user-badge button {
+    width: 34px;
+  }
+}

@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { getAdminSession, getDashboardSummary, loginAdmin, logoutAdmin } from "../api/client";
-import { dashboardServiceInterests, defaultUserProfile, userProfileStorageKey } from "../content/dashboardUsers";
+import { createUserSession, dashboardServiceInterests, defaultUserProfile, storeUserSession, userProfileStorageKey } from "../content/dashboardUsers";
 import {
   canUserDownloadResource,
   defaultLearningResourceAccessRules,
@@ -130,7 +130,13 @@ export function DashboardPage() {
   const saveUserProfile = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     saveJson(userProfileStorageKey, userProfile);
+    storeUserSession(createUserSession(userProfile));
     setUserSaved(true);
+  };
+
+  const handleUserLogout = () => {
+    storeUserSession(null);
+    setUserSaved(false);
   };
 
   const persistResources = (nextResources: ManagedLearningResource[]) => {
@@ -454,8 +460,8 @@ export function DashboardPage() {
                   Notes
                   <textarea rows={5} value={userProfile.notes} onChange={(event) => updateUserProfile("notes", event.target.value)} />
                 </label>
-                {userSaved && <p className="form-feedback success">Profile saved. Approved resources are available on the right.</p>}
-                <button className="button" type="submit"><Save size={18} /> Save user profile</button>
+                {userSaved && <p className="form-feedback success">Profile saved. You are now logged in, and your name will show in the site header.</p>}
+                <div className="form-actions-inline"><button className="button" type="submit"><Save size={18} /> Save and log in</button><button className="button light" type="button" onClick={handleUserLogout}>Sign out</button></div>
                 <p className="auth-note">User profiles and uploaded files are saved in this browser until a shared database or Vercel Blob is connected.</p>
               </form>
             </section>
