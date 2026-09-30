@@ -1,3 +1,4 @@
+import { caseStudies, companyProfile, insights, services, testimonials } from "../../backend/data/content";
 import type {
   CaseStudy,
   CompanyProfile,
@@ -27,48 +28,107 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
   return data;
 }
 
+function staticDashboardSummary(): DashboardSummary {
+  return {
+    generatedAt: new Date().toISOString(),
+    totals: {
+      services: services.length,
+      caseStudies: caseStudies.length,
+      insights: insights.length,
+      testimonials: testimonials.length,
+      submissions: 0
+    },
+    recentSubmissions: [],
+    serviceDemand: services.map((service) => ({
+      slug: service.slug,
+      title: service.title,
+      inquiries: 0
+    }))
+  };
+}
+
 export async function getServices(): Promise<Service[]> {
-  const data = await request<{ services: Service[] }>("/api/services");
-  return data.services;
+  try {
+    const data = await request<{ services: Service[] }>("/api/services");
+    return data.services;
+  } catch {
+    return services;
+  }
 }
 
 export async function getService(slug: string): Promise<Service> {
-  const data = await request<{ service: Service }>(`/api/services/${slug}`);
-  return data.service;
+  try {
+    const data = await request<{ service: Service }>(`/api/services/${slug}`);
+    return data.service;
+  } catch {
+    const service = services.find((item) => item.slug === slug);
+    if (!service) throw new Error("Service not found.");
+    return service;
+  }
 }
 
 export async function getCaseStudies(): Promise<CaseStudy[]> {
-  const data = await request<{ caseStudies: CaseStudy[] }>("/api/case-studies");
-  return data.caseStudies;
+  try {
+    const data = await request<{ caseStudies: CaseStudy[] }>("/api/case-studies");
+    return data.caseStudies;
+  } catch {
+    return caseStudies;
+  }
 }
 
 export async function getInsights(): Promise<Insight[]> {
-  const data = await request<{ insights: Insight[] }>("/api/insights");
-  return data.insights;
+  try {
+    const data = await request<{ insights: Insight[] }>("/api/insights");
+    return data.insights;
+  } catch {
+    return insights;
+  }
 }
 
 export async function getInsight(slug: string): Promise<Insight> {
-  const data = await request<{ insight: Insight }>(`/api/insights/${slug}`);
-  return data.insight;
+  try {
+    const data = await request<{ insight: Insight }>(`/api/insights/${slug}`);
+    return data.insight;
+  } catch {
+    const insight = insights.find((item) => item.slug === slug);
+    if (!insight) throw new Error("Insight not found.");
+    return insight;
+  }
 }
 
 export async function getTestimonials(): Promise<Testimonial[]> {
-  const data = await request<{ testimonials: Testimonial[] }>("/api/testimonials");
-  return data.testimonials;
+  try {
+    const data = await request<{ testimonials: Testimonial[] }>("/api/testimonials");
+    return data.testimonials;
+  } catch {
+    return testimonials;
+  }
 }
 
 export async function getCompanyProfile(): Promise<CompanyProfile> {
-  const data = await request<{ companyProfile: CompanyProfile }>("/api/company-profile");
-  return data.companyProfile;
+  try {
+    const data = await request<{ companyProfile: CompanyProfile }>("/api/company-profile");
+    return data.companyProfile;
+  } catch {
+    return companyProfile;
+  }
 }
 
 export async function getSubmissions(): Promise<ContactSubmission[]> {
-  const data = await request<{ submissions: ContactSubmission[] }>("/api/submissions");
-  return data.submissions;
+  try {
+    const data = await request<{ submissions: ContactSubmission[] }>("/api/submissions");
+    return data.submissions;
+  } catch {
+    return [];
+  }
 }
 
 export async function getDashboardSummary(): Promise<DashboardSummary> {
-  return request<DashboardSummary>("/api/dashboard");
+  try {
+    return await request<DashboardSummary>("/api/dashboard");
+  } catch {
+    return staticDashboardSummary();
+  }
 }
 
 export async function submitContact(payload: ContactPayload): Promise<ContactResponse> {

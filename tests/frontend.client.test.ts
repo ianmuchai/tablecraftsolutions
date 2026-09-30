@@ -1,5 +1,5 @@
 import { describe, expect, test, vi } from "vitest";
-import { getDashboardSummary, submitContact } from "../src/api/client";
+import { getCompanyProfile, getDashboardSummary, getService, getServices, submitContact } from "../src/api/client";
 
 describe("submitContact", () => {
   test("posts contact payloads to the backend and returns created submission metadata", async () => {
@@ -85,5 +85,27 @@ describe("getDashboardSummary", () => {
     expect(summary.totals.submissions).toBe(1);
     expect(summary.recentSubmissions[0].name).toBe("Amina Patel");
     expect(summary.serviceDemand[0].inquiries).toBe(1);
+  });
+});
+describe("static content fallbacks", () => {
+  test("returns full company profile details when deployed API content routes fail", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new Error("FUNCTION_INVOCATION_FAILED")));
+
+    const profile = await getCompanyProfile();
+
+    expect(profile.incorporation.status).toBe("Incorporated in 2018");
+    expect(profile.leadership.founder).toBe("Farhan Dahir");
+    expect(profile.leadership.note).toContain("vast hospitality industry experience");
+  });
+
+  test("returns service lists and detail pages from bundled content when API routes fail", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new Error("FUNCTION_INVOCATION_FAILED")));
+
+    const services = await getServices();
+    const staffTraining = await getService("staff-training");
+
+    expect(services).toHaveLength(6);
+    expect(staffTraining.trainingOptions?.map((option) => option.mode)).toEqual(["In-person", "Virtual"]);
+    expect(staffTraining.learningHub?.title).toBe("TableCraft Learning Hub");
   });
 });

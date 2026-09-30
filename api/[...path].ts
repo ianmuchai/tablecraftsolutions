@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { caseStudies, companyProfile, insights, services, testimonials } from "../backend/data/content";
 import { validateContactPayload } from "../backend/lib/validation";
 
@@ -109,7 +110,7 @@ export default async function handler(request: VercelRequest, response: VercelRe
       return response.status(201).json({
         message: "Inquiry received.",
         submission: {
-          id: crypto.randomUUID(),
+          id: randomUUID(),
           createdAt: new Date().toISOString()
         }
       });
@@ -121,3 +122,4 @@ export default async function handler(request: VercelRequest, response: VercelRe
     return response.status(500).json({ error: "Something went wrong." });
   }
 }
+
