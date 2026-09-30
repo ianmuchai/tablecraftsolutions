@@ -1906,3 +1906,89 @@ svg {
 .brand-logo {
   aspect-ratio: 1800 / 589;
 }
+
+/* Direct contact details and floating WhatsApp action */
+.direct-contact-list,
+.footer-contact-list {
+  display: grid;
+  gap: 10px;
+  margin-top: 22px;
+}
+
+.direct-contact-list a,
+.direct-contact-list span,
+.footer-contact-list a,
+.footer-contact-list span {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--teal-950);
+  font-weight: 850;
+  line-height: 1.4;
+}
+
+.direct-contact-list svg,
+.footer-contact-list svg {
+  flex: 0 0 auto;
+  color: var(--amber-dark);
+}
+
+.footer-contact-list {
+  margin-top: 2px;
+}
+
+.footer-contact-list a,
+.footer-contact-list span {
+  color: rgba(255, 255, 255, 0.84);
+}
+
+.footer-contact-list svg {
+  color: var(--amber);
+}
+
+.whatsapp-float {
+  position: fixed;
+  right: clamp(16px, 3vw, 28px);
+  bottom: clamp(16px, 3vw, 28px);
+  z-index: 60;
+  display: inline-flex;
+  min-height: 54px;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 14px 18px;
+  border-radius: 999px;
+  background: #25d366;
+  color: #062f35;
+  font-weight: 950;
+  box-shadow: 0 18px 42px rgba(0, 61, 70, 0.28);
+  transition: transform 160ms ease, box-shadow 160ms ease, background-color 160ms ease;
+}
+
+.whatsapp-float:hover {
+  transform: translateY(-2px);
+  background: #2ee16f;
+  box-shadow: 0 22px 48px rgba(0, 61, 70, 0.34);
+}
+
+.whatsapp-float svg {
+  flex: 0 0 auto;
+}
+
+@media (max-width: 640px) {
+  .whatsapp-float {
+    right: 14px;
+    bottom: 14px;
+    width: 54px;
+    padding: 0;
+  }
+
+  .whatsapp-float span {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+}

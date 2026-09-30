@@ -1,6 +1,7 @@
-import { Menu, X } from "lucide-react";
+import { MapPin, Menu, MessageCircle, Phone, X } from "lucide-react";
 import { useState } from "react";
 import { Link, NavLink, Outlet } from "react-router-dom";
+import { contactDetails } from "../content/contactDetails";
 import { LogoMark } from "./LogoMark";
 
 const links = [
@@ -36,12 +37,24 @@ export function Layout() {
       <main>
         <Outlet />
       </main>
+      <a className="whatsapp-float" href={contactDetails.whatsappUrl} target="_blank" rel="noreferrer" aria-label={contactDetails.whatsappLabel}>
+        <MessageCircle size={24} />
+        <span>WhatsApp Farhan</span>
+      </a>
       <footer className="site-footer">
         <div className="footer-brand-block">
           <Link className="brand footer-brand logo-only" to="/" aria-label="TableCraft Solutions home">
             <LogoMark />
           </Link>
           <p>Restaurant consultancy for launches, operations, menus, teams, and profitable hospitality systems.</p>
+          <div className="footer-contact-list" aria-label="TableCraft contact details">
+            <a href={contactDetails.phoneHref}>
+              <Phone size={16} /> Farhan: {contactDetails.phoneDisplay}
+            </a>
+            <span>
+              <MapPin size={16} /> {contactDetails.location}
+            </span>
+          </div>
         </div>
         <nav className="footer-links" aria-label="Footer navigation">
           {links.slice(1).map((link) => (

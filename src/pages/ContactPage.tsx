@@ -1,7 +1,8 @@
-﻿import { Send } from "lucide-react";
+import { MapPin, Phone, Send } from "lucide-react";
 import { FormEvent, useState } from "react";
 import { submitContact } from "../api/client";
 import { PageHero } from "../components/sections";
+import { contactDetails } from "../content/contactDetails";
 import type { ContactPayload } from "../types";
 
 const initialPayload: ContactPayload = {
@@ -53,6 +54,14 @@ export function ContactPage() {
             Use the form for launch planning, menu engineering, operations audits, training, brand experience, or cost
             control support.
           </p>
+          <div className="direct-contact-list" aria-label="Direct contact details">
+            <a href={contactDetails.phoneHref}>
+              <Phone size={18} /> Farhan: {contactDetails.phoneDisplay}
+            </a>
+            <span>
+              <MapPin size={18} /> {contactDetails.location}
+            </span>
+          </div>
           <div className="contact-note">
             <strong>Best first message:</strong>
             <span>Tell us your restaurant type, location, current challenge, and ideal timeline.</span>
@@ -100,8 +109,3 @@ export function ContactPage() {
     </>
   );
 }
-
-
-
-
-
