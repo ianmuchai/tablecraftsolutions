@@ -1,10 +1,10 @@
-﻿import { getAdminUsername, setSessionCookie, type VercelRequest, type VercelResponse } from "./_shared";
+﻿import { getAdminUsername, setSessionCookie } from "./_shared.js";
 
-export default function handler(request: VercelRequest, response: VercelResponse) {
+export default function handler(request, response) {
   if (request.method !== "POST") return response.status(405).json({ error: "Method not allowed." });
   if (!process.env.ADMIN_PASSWORD) return response.status(503).json({ error: "Admin login is not configured." });
 
-  const credentials = request.body && typeof request.body === "object" ? (request.body as Record<string, unknown>) : {};
+  const credentials = request.body && typeof request.body === "object" ? request.body : {};
   const username = typeof credentials.username === "string" ? credentials.username.trim() : "";
   const password = typeof credentials.password === "string" ? credentials.password : "";
 
@@ -12,7 +12,7 @@ export default function handler(request: VercelRequest, response: VercelResponse
     return response.status(401).json({ error: "Invalid username or password." });
   }
 
-  const session = { role: "admin" as const, name: getAdminUsername(), issuedAt: Date.now() };
+  const session = { role: "admin", name: getAdminUsername(), issuedAt: Date.now() };
   setSessionCookie(response, session);
   return response.json({ authenticated: true, role: "admin", name: session.name });
 }

@@ -1,47 +1,28 @@
 ﻿import { createHmac, timingSafeEqual } from "node:crypto";
 
-export type VercelRequest = {
-  method?: string;
-  body?: unknown;
-  headers?: Record<string, string | string[] | undefined>;
-};
-
-export type VercelResponse = {
-  status(code: number): VercelResponse;
-  json(payload: unknown): VercelResponse;
-  setHeader?(name: string, value: string): VercelResponse;
-};
-
-export type AdminSession = {
-  role: "admin";
-  name: string;
-  issuedAt: number;
-};
-
 export const sessionCookieName = "tablecraft_session";
 export const sessionMaxAge = 60 * 60 * 8;
-
 export const getAdminUsername = () => process.env.ADMIN_USERNAME || "Farhan";
 const getAuthSecret = () => process.env.AUTH_SECRET || "tablecraft-development-auth-secret";
-const encode = (value: string) => Buffer.from(value, "utf8").toString("base64url");
-const decode = (value: string) => Buffer.from(value, "base64url").toString("utf8");
+const encode = (value) => Buffer.from(value, "utf8").toString("base64url");
+const decode = (value) => Buffer.from(value, "base64url").toString("utf8");
 
-function sign(value: string) {
+function sign(value) {
   return createHmac("sha256", getAuthSecret()).update(value).digest("base64url");
 }
 
-function secureCompare(left: string, right: string) {
+function secureCompare(left, right) {
   const leftBuffer = Buffer.from(left);
   const rightBuffer = Buffer.from(right);
   return leftBuffer.length === rightBuffer.length && timingSafeEqual(leftBuffer, rightBuffer);
 }
 
-export function createSessionToken(session: AdminSession) {
+export function createSessionToken(session) {
   const payload = encode(JSON.stringify(session));
   return `${payload}.${sign(payload)}`;
 }
 
-export function readCookie(request: VercelRequest, name: string) {
+export function readCookie(request, name) {
   const rawHeader = request.headers?.cookie;
   const cookieHeader = Array.isArray(rawHeader) ? rawHeader.join("; ") : rawHeader ?? "";
   return cookieHeader
@@ -51,13 +32,13 @@ export function readCookie(request: VercelRequest, name: string) {
     ?.slice(name.length + 1);
 }
 
-export function readSession(request: VercelRequest): AdminSession | null {
+export function readSession(request) {
   const token = readCookie(request, sessionCookieName);
   if (!token) return null;
   const [payload, signature] = token.split(".");
   if (!payload || !signature || !secureCompare(signature, sign(payload))) return null;
   try {
-    const session = JSON.parse(decode(payload)) as AdminSession;
+    const session = JSON.parse(decode(payload));
     if (session.role !== "admin" || !session.name || Date.now() - session.issuedAt > sessionMaxAge * 1000) return null;
     return session;
   } catch {
@@ -65,13 +46,13 @@ export function readSession(request: VercelRequest): AdminSession | null {
   }
 }
 
-export function setSessionCookie(response: VercelResponse, session: AdminSession) {
-  response.setHeader?.(
+export function setSessionCookie(response, session) {
+  response.setHeader(
     "Set-Cookie",
     `${sessionCookieName}=${createSessionToken(session)}; Path=/; HttpOnly; SameSite=Lax; Secure; Max-Age=${sessionMaxAge}`
   );
 }
 
-export function clearSessionCookie(response: VercelResponse) {
-  response.setHeader?.("Set-Cookie", `${sessionCookieName}=; Path=/; HttpOnly; SameSite=Lax; Secure; Max-Age=0`);
+export function clearSessionCookie(response) {
+  response.setHeader("Set-Cookie", `${sessionCookieName}=; Path=/; HttpOnly; SameSite=Lax; Secure; Max-Age=0`);
 }
