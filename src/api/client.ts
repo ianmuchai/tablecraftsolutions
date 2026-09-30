@@ -1,5 +1,7 @@
 import { caseStudies, companyProfile, insights, services, testimonials } from "../../backend/data/content";
 import type {
+  AdminLoginPayload,
+  AdminSession,
   CaseStudy,
   CompanyProfile,
   ContactPayload,
@@ -47,6 +49,27 @@ function staticDashboardSummary(): DashboardSummary {
   };
 }
 
+export async function loginAdmin(payload: AdminLoginPayload): Promise<AdminSession> {
+  return request<AdminSession>("/api/auth/login", {
+    method: "POST",
+    credentials: "same-origin",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  });
+}
+
+export async function getAdminSession(): Promise<AdminSession> {
+  return request<AdminSession>("/api/auth/session", {
+    credentials: "same-origin"
+  });
+}
+
+export async function logoutAdmin(): Promise<AdminSession> {
+  return request<AdminSession>("/api/auth/logout", {
+    method: "POST",
+    credentials: "same-origin"
+  });
+}
 export async function getServices(): Promise<Service[]> {
   try {
     const data = await request<{ services: Service[] }>("/api/services");

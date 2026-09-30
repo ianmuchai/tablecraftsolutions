@@ -1,5 +1,6 @@
 import { describe, expect, test, vi } from "vitest";
-import { getCompanyProfile, getDashboardSummary, getService, getServices, submitContact } from "../src/api/client";
+import { getAdminSession, getCompanyProfile, getDashboardSummary, getService, getServices, loginAdmin, logoutAdmin, submitContact } from "../src/api/client";
+import { defaultUserProfile } from "../src/content/dashboardUsers";
 
 describe("submitContact", () => {
   test("posts contact payloads to the backend and returns created submission metadata", async () => {
@@ -107,5 +108,44 @@ describe("static content fallbacks", () => {
     expect(services).toHaveLength(6);
     expect(staffTraining.trainingOptions?.map((option) => option.mode)).toEqual(["In-person", "Virtual"]);
     expect(staffTraining.learningHub?.title).toBe("TableCraft Learning Hub");
+  });
+});
+describe("dashboard auth client", () => {
+  test("posts admin credentials and includes same-origin cookies", async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ authenticated: true, role: "admin", name: "Farhan" })
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    const session = await loginAdmin({ username: "Farhan", password: "secret" });
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/auth/login",
+      expect.objectContaining({
+        method: "POST",
+        credentials: "same-origin",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username: "Farhan", password: "secret" })
+      })
+    );
+    expect(session).toEqual({ authenticated: true, role: "admin", name: "Farhan" });
+  });
+
+  test("loads and clears admin sessions", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce({ ok: true, json: async () => ({ authenticated: true, role: "admin", name: "Farhan" }) })
+      .mockResolvedValueOnce({ ok: true, json: async () => ({ authenticated: false }) });
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(getAdminSession()).resolves.toEqual({ authenticated: true, role: "admin", name: "Farhan" });
+    await expect(logoutAdmin()).resolves.toEqual({ authenticated: false });
+  });
+
+  test("provides safe default user profile values", () => {
+    expect(defaultUserProfile.role).toBe("user");
+    expect(defaultUserProfile.name).toBe("");
+    expect(defaultUserProfile.company).toBe("");
   });
 });

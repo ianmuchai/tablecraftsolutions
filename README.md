@@ -1,4 +1,4 @@
-﻿# TableCraft Solutions
+# TableCraft Solutions
 
 Full-stack website for TableCraft Solutions, a restaurant consultancy.
 
@@ -61,6 +61,13 @@ Recommended cPanel settings:
 
 For detailed steps, see `CPANEL_DEPLOYMENT.md`.
 
+
+## Dashboard Login
+
+The dashboard supports two profile types:
+
+- Admin: set `ADMIN_USERNAME`, `ADMIN_PASSWORD`, and `AUTH_SECRET` in Vercel project environment variables. Use `Farhan` for `ADMIN_USERNAME` and set the password value only in Vercel, not in GitHub.
+- User: users can create their own consultation profile from the Dashboard tab. Current user profiles are saved privately in the browser until a database is connected.
 ## Useful Scripts
 
 ```bash

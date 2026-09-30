@@ -109,3 +109,21 @@ export type DashboardSummary = {
     inquiries: number;
   }>;
 };
+
+export type AdminSession =
+  | { authenticated: false }
+  | { authenticated: true; role: "admin"; name: string };
+
+export type AdminLoginPayload = {
+  username: string;
+  password: string;
+};
+
+export type DashboardUserProfile = {
+  role: "user";
+  name: string;
+  email: string;
+  company: string;
+  serviceInterest: string;
+  notes: string;
+};
