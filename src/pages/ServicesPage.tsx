@@ -1,6 +1,7 @@
-﻿import { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { getServices } from "../api/client";
 import { PageHero, ServiceGrid } from "../components/sections";
+import { resolveSiteText } from "../content/learningResources";
 import type { Service } from "../types";
 
 export function ServicesPage() {
@@ -15,7 +16,7 @@ export function ServicesPage() {
       <PageHero
         eyebrow="Services"
         title="Consultancy tracks for every layer of restaurant performance."
-        copy="Choose a focused project or combine tracks into a deeper operational transformation."
+        copy={resolveSiteText("services.hero.copy")}
         image="/hero-services.png"
       />
       <section className="section container">
@@ -28,5 +29,3 @@ export function ServicesPage() {
     </>
   );
 }
-
-

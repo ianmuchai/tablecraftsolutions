@@ -2286,3 +2286,173 @@ svg {
     font-size: 0.9rem;
   }
 }
+
+/* Mobile navigation reliability: keep the dropdown from being clipped by header containment. */
+.site-header {
+  contain: none;
+  overflow: visible;
+}
+
+@media (max-width: 860px) {
+  .site-header {
+    z-index: 120;
+  }
+
+  .site-nav {
+    z-index: 130;
+  }
+}
+
+/* Service hover explainers */
+.hover-explainer {
+  position: relative;
+  outline: none;
+}
+
+.hover-explainer::after {
+  position: absolute;
+  left: 0;
+  bottom: calc(100% + 10px);
+  z-index: 40;
+  width: min(320px, calc(100vw - 48px));
+  padding: 10px 12px;
+  border: 1px solid rgba(0, 61, 70, 0.14);
+  border-radius: 8px;
+  background: #062f35;
+  color: #fff;
+  box-shadow: 0 18px 36px rgba(0, 45, 52, 0.22);
+  content: attr(data-tooltip);
+  font-size: 0.86rem;
+  font-weight: 750;
+  line-height: 1.45;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(4px);
+  transition: opacity 160ms ease, transform 160ms ease;
+}
+
+.hover-explainer:hover::after,
+.hover-explainer:focus-visible::after {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.hover-explainer:focus-visible {
+  box-shadow: 0 0 0 3px rgba(255, 178, 26, 0.28);
+}
+
+.training-card.hover-explainer::after,
+.focus-area-card.hover-explainer::after,
+.learning-hub-card.hover-explainer::after,
+.resource-card.hover-explainer::after {
+  left: 18px;
+  right: 18px;
+  width: auto;
+}
+
+@media (hover: none) {
+  .hover-explainer::after {
+    display: none;
+  }
+}
+
+/* Dashboard resource and access management */
+.management-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+  margin-top: 20px;
+}
+
+.management-panel h2,
+.text-management-panel h2 {
+  font-size: clamp(1.5rem, 2.4vw, 2rem);
+}
+
+.rule-list,
+.resource-admin-list,
+.download-list,
+.text-record-grid {
+  display: grid;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.rule-pill {
+  display: block;
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--ink);
+  text-align: left;
+  font-weight: 850;
+  cursor: pointer;
+}
+
+.rule-pill.active {
+  border-color: rgba(255, 178, 26, 0.54);
+  background: var(--cream);
+  color: var(--teal-950);
+}
+
+.text-management-panel {
+  margin-top: 18px;
+}
+
+.text-record {
+  display: grid;
+  gap: 8px;
+  color: var(--teal-950);
+  font-weight: 900;
+}
+
+.text-record span {
+  color: var(--amber-dark);
+  font-size: 0.82rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.download-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 14px;
+  align-items: center;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--mist);
+}
+
+.download-card strong,
+.download-card span,
+.resource-admin-list small {
+  display: block;
+}
+
+.download-card span,
+.resource-admin-list small {
+  color: var(--muted);
+  font-weight: 800;
+}
+
+.download-card p {
+  margin: 8px 0 0;
+}
+
+.resource-admin-list {
+  margin-top: 18px;
+}
+
+@media (max-width: 860px) {
+  .management-grid,
+  .download-card {
+    grid-template-columns: 1fr;
+  }
+
+  .download-card .button {
+    width: 100%;
+  }
+}

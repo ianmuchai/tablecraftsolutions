@@ -1,7 +1,8 @@
-﻿import { Award, Handshake, Layers3 } from "lucide-react";
+import { Award, Handshake, Layers3 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { getCompanyProfile } from "../api/client";
 import { CtaBand, PageHero } from "../components/sections";
+import { resolveSiteText } from "../content/learningResources";
 import type { CompanyProfile } from "../types";
 
 export function AboutPage() {
@@ -53,7 +54,7 @@ export function AboutPage() {
           <div className="fact-row">
             <span>Founder & CEO</span>
             <strong>{leadership?.founder ?? "Leadership details loading"}</strong>
-            <p>{leadership?.note ?? "Fetching founder and CEO details from the backend."}</p>
+            <p>{resolveSiteText("about.leadership.copy") || leadership?.note || "Fetching founder and CEO details from the backend."}</p>
           </div>
         </div>
       </section>
@@ -87,5 +88,3 @@ export function AboutPage() {
     </>
   );
 }
-
-

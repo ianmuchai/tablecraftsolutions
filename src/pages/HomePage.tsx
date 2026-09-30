@@ -1,8 +1,9 @@
-﻿import { ArrowRight, ClipboardCheck, CookingPot, LineChart, Sparkles } from "lucide-react";
+import { ArrowRight, ClipboardCheck, CookingPot, LineChart, Sparkles } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { getServices, getTestimonials } from "../api/client";
 import { CtaBand, ServiceGrid, Testimonials } from "../components/sections";
+import { resolveSiteText } from "../content/learningResources";
 import type { Service, Testimonial } from "../types";
 
 const metrics = [
@@ -88,10 +89,7 @@ export function HomePage() {
         <div className="hero-content">
           <p className="eyebrow">Restaurant consultancy</p>
           <h1>TableCraft Solutions</h1>
-          <p>
-            We help restaurants launch smarter, train confident teams, tighten operations, and turn hospitality ambition
-            into standards, systems, and measurable service excellence.
-          </p>
+          <p>{resolveSiteText("home.hero.copy")}</p>
           <div className="hero-actions">
             <Link className="button" to="/contact">
               Book a consultation
@@ -161,4 +159,3 @@ export function HomePage() {
     </>
   );
 }
-

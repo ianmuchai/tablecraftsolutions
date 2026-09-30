@@ -3,8 +3,12 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { getService } from "../api/client";
 import { CtaBand } from "../components/sections";
+import { resolveSiteText } from "../content/learningResources";
 import type { Service } from "../types";
 import { NotFoundPage } from "./NotFoundPage";
+
+const outcomeTooltip = (serviceTitle: string, item: string) => `Expected result for ${serviceTitle}: ${item}.`;
+const deliverableTooltip = (item: string) => `Included in this engagement: ${item}.`;
 
 export function ServiceDetailPage() {
   const { slug } = useParams();
@@ -42,7 +46,7 @@ export function ServiceDetailPage() {
           <h2>What improves</h2>
           <ul className="check-list">
             {service.outcomes.map((item) => (
-              <li key={item}>
+              <li className="hover-explainer" data-tooltip={outcomeTooltip(service.title, item)} key={item} tabIndex={0}>
                 <CheckCircle2 size={18} /> {item}
               </li>
             ))}
@@ -53,7 +57,7 @@ export function ServiceDetailPage() {
           <h2>What you receive</h2>
           <ul className="check-list">
             {service.deliverables.map((item) => (
-              <li key={item}>
+              <li className="hover-explainer" data-tooltip={deliverableTooltip(item)} key={item} tabIndex={0}>
                 <CheckCircle2 size={18} /> {item}
               </li>
             ))}
@@ -66,24 +70,21 @@ export function ServiceDetailPage() {
           <div className="section-heading">
             <p className="eyebrow">Training delivery</p>
             <h2>Choose in-person or virtual staff training.</h2>
-            <p>
-              Staff training can be delivered on site for hands-on operational practice or virtually for guided learning,
-              manager alignment, and follow-up coaching.
-            </p>
+            <p>{resolveSiteText("staffTraining.delivery.copy")}</p>
           </div>
 
           <div className="training-options">
             {service.trainingOptions?.map((option) => {
               const Icon = option.mode === "In-person" ? UsersRound : Laptop;
               return (
-                <article className="training-card" key={option.mode}>
+                <article className="training-card hover-explainer" data-tooltip={option.summary} key={option.mode} tabIndex={0}>
                   <Icon size={28} />
                   <p className="eyebrow">{option.mode}</p>
                   <h3>{option.title}</h3>
                   <p>{option.summary}</p>
                   <ul className="check-list compact-list">
                     {option.bestFor.map((item) => (
-                      <li key={item}>
+                      <li className="hover-explainer" data-tooltip={`Best suited for: ${item}.`} key={item} tabIndex={0}>
                         <CheckCircle2 size={16} /> {item}
                       </li>
                     ))}
@@ -104,7 +105,7 @@ export function ServiceDetailPage() {
             </div>
             <div className="focus-area-grid">
               {service.excellenceFocusAreas?.map((area) => (
-                <article className="focus-area-card" key={area.title}>
+                <article className="focus-area-card hover-explainer" data-tooltip={area.summary} key={area.title} tabIndex={0}>
                   <TrendingUp size={22} />
                   <h3>{area.title}</h3>
                   <p>{area.summary}</p>
@@ -114,14 +115,14 @@ export function ServiceDetailPage() {
           </div>
 
           <div className="learning-layout">
-            <article className="learning-hub-card">
+            <article className="learning-hub-card hover-explainer" data-tooltip={service.learningHub?.summary} tabIndex={0}>
               <GraduationCap size={30} />
               <p className="eyebrow">Learning hub</p>
               <h2>{service.learningHub?.title}</h2>
               <p>{service.learningHub?.summary}</p>
               <ul className="check-list compact-list">
                 {service.learningHub?.features.map((feature) => (
-                  <li key={feature}>
+                  <li className="hover-explainer" data-tooltip={`Learning hub feature: ${feature}.`} key={feature} tabIndex={0}>
                     <CheckCircle2 size={16} /> {feature}
                   </li>
                 ))}
@@ -132,7 +133,7 @@ export function ServiceDetailPage() {
               <p className="eyebrow">Learning resources</p>
               <h2>Resources teams can keep using.</h2>
               {service.learningResources?.map((resource) => (
-                <article className="resource-card" key={resource.title}>
+                <article className="resource-card hover-explainer" data-tooltip={resource.summary} key={resource.title} tabIndex={0}>
                   <BookOpen size={22} />
                   <div>
                     <strong>{resource.title}</strong>

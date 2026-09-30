@@ -11,6 +11,30 @@ export type LearningResource = {
   summary: string;
 };
 
+export type ManagedLearningResource = LearningResource & {
+  id: string;
+  fileName: string;
+  downloadUrl: string;
+  audience: string;
+  uploadedAt: string;
+};
+
+export type LearningResourceAccessRule = {
+  id: string;
+  resourceId: string;
+  scope: "all" | "email" | "domain";
+  value: string;
+  enabled: boolean;
+};
+
+export type SiteTextRecord = {
+  id: string;
+  page: string;
+  label: string;
+  key: string;
+  value: string;
+};
+
 export type LearningHub = {
   title: string;
   summary: string;
@@ -123,6 +147,7 @@ export type DashboardUserProfile = {
   role: "user";
   name: string;
   email: string;
+  password?: string;
   company: string;
   serviceInterest: string;
   notes: string;

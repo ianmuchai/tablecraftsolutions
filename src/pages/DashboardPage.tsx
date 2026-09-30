@@ -1,19 +1,60 @@
-import { Activity, BarChart3, ClipboardList, Inbox, LockKeyhole, RefreshCw, Server, UserRound } from "lucide-react";
-import { FormEvent, useEffect, useState } from "react";
+import {
+  Activity,
+  BarChart3,
+  ClipboardList,
+  Download,
+  FileText,
+  Inbox,
+  LockKeyhole,
+  RefreshCw,
+  Save,
+  Server,
+  ShieldCheck,
+  Upload,
+  UserRound
+} from "lucide-react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 import { getAdminSession, getDashboardSummary, loginAdmin, logoutAdmin } from "../api/client";
 import { dashboardServiceInterests, defaultUserProfile, userProfileStorageKey } from "../content/dashboardUsers";
+import {
+  canUserDownloadResource,
+  defaultLearningResourceAccessRules,
+  defaultManagedLearningResources,
+  defaultSiteTextRecords,
+  learningAccessRulesStorageKey,
+  learningResourcesStorageKey,
+  siteTextStorageKey
+} from "../content/learningResources";
 import type { CSSProperties } from "react";
-import type { AdminSession, DashboardSummary, DashboardUserProfile } from "../types";
+import type {
+  AdminSession,
+  DashboardSummary,
+  DashboardUserProfile,
+  LearningResourceAccessRule,
+  ManagedLearningResource,
+  SiteTextRecord
+} from "../types";
+
+function loadJson<T>(key: string, fallback: T): T {
+  if (typeof window === "undefined") return fallback;
+  const stored = window.localStorage.getItem(key);
+  if (!stored) return fallback;
+  try {
+    return JSON.parse(stored) as T;
+  } catch {
+    return fallback;
+  }
+}
+
+function saveJson<T>(key: string, value: T) {
+  if (typeof window !== "undefined") {
+    window.localStorage.setItem(key, JSON.stringify(value));
+  }
+}
 
 const loadStoredProfile = (): DashboardUserProfile => {
-  if (typeof window === "undefined") return defaultUserProfile;
-  const stored = window.localStorage.getItem(userProfileStorageKey);
-  if (!stored) return defaultUserProfile;
-  try {
-    return { ...defaultUserProfile, ...(JSON.parse(stored) as Partial<DashboardUserProfile>), role: "user" };
-  } catch {
-    return defaultUserProfile;
-  }
+  const stored = loadJson<Partial<DashboardUserProfile>>(userProfileStorageKey, {});
+  return { ...defaultUserProfile, ...stored, role: "user" };
 };
 
 export function DashboardPage() {
@@ -26,7 +67,23 @@ export function DashboardPage() {
   const [adminFeedback, setAdminFeedback] = useState("");
   const [userProfile, setUserProfile] = useState<DashboardUserProfile>(defaultUserProfile);
   const [userSaved, setUserSaved] = useState(false);
+  const [resources, setResources] = useState<ManagedLearningResource[]>(defaultManagedLearningResources);
+  const [accessRules, setAccessRules] = useState<LearningResourceAccessRule[]>(defaultLearningResourceAccessRules);
+  const [siteTextRecords, setSiteTextRecords] = useState<SiteTextRecord[]>(defaultSiteTextRecords);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [resourceDraft, setResourceDraft] = useState({ title: "", summary: "", audience: "Staff training users" });
+  const [ruleDraft, setRuleDraft] = useState<Pick<LearningResourceAccessRule, "resourceId" | "scope" | "value">>({
+    resourceId: "all",
+    scope: "all",
+    value: "All logged-in staff-training users"
+  });
+  const [managementFeedback, setManagementFeedback] = useState("");
   const heroStyle = { "--page-hero-image": "url(/hero-dashboard.png)" } as CSSProperties;
+
+  const permittedResources = useMemo(
+    () => resources.filter((resource) => canUserDownloadResource(userProfile, resource, accessRules)),
+    [accessRules, resources, userProfile]
+  );
 
   const loadDashboard = async () => {
     setLoading(true);
@@ -44,6 +101,9 @@ export function DashboardPage() {
     void loadDashboard();
     getAdminSession().then(setAdminSession).catch(() => setAdminSession({ authenticated: false }));
     setUserProfile(loadStoredProfile());
+    setResources(loadJson(learningResourcesStorageKey, defaultManagedLearningResources));
+    setAccessRules(loadJson(learningAccessRulesStorageKey, defaultLearningResourceAccessRules));
+    setSiteTextRecords(loadJson(siteTextStorageKey, defaultSiteTextRecords));
   }, []);
 
   const handleAdminLogin = async (event: FormEvent<HTMLFormElement>) => {
@@ -69,8 +129,74 @@ export function DashboardPage() {
 
   const saveUserProfile = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    window.localStorage.setItem(userProfileStorageKey, JSON.stringify(userProfile));
+    saveJson(userProfileStorageKey, userProfile);
     setUserSaved(true);
+  };
+
+  const persistResources = (nextResources: ManagedLearningResource[]) => {
+    setResources(nextResources);
+    saveJson(learningResourcesStorageKey, nextResources);
+  };
+
+  const persistRules = (nextRules: LearningResourceAccessRule[]) => {
+    setAccessRules(nextRules);
+    saveJson(learningAccessRulesStorageKey, nextRules);
+  };
+
+  const persistTextRecords = (nextRecords: SiteTextRecord[]) => {
+    setSiteTextRecords(nextRecords);
+    saveJson(siteTextStorageKey, nextRecords);
+  };
+
+  const handleResourceUpload = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setManagementFeedback("");
+    if (!selectedFile) {
+      setManagementFeedback("Choose a file before uploading a learning resource.");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const nextResource: ManagedLearningResource = {
+        id: `resource-${Date.now()}`,
+        title: resourceDraft.title.trim() || selectedFile.name.replace(/\.[^.]+$/, ""),
+        format: selectedFile.type || "Download",
+        summary: resourceDraft.summary.trim() || "Staff-training resource uploaded by the admin.",
+        audience: resourceDraft.audience.trim() || "Staff training users",
+        fileName: selectedFile.name,
+        downloadUrl: String(reader.result),
+        uploadedAt: new Date().toISOString()
+      };
+      persistResources([nextResource, ...resources]);
+      setResourceDraft({ title: "", summary: "", audience: "Staff training users" });
+      setSelectedFile(null);
+      setManagementFeedback("Learning resource uploaded and ready for access rules.");
+    };
+    reader.readAsDataURL(selectedFile);
+  };
+
+  const addAccessRule = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const nextRule: LearningResourceAccessRule = {
+      id: `rule-${Date.now()}`,
+      resourceId: ruleDraft.resourceId,
+      scope: ruleDraft.scope,
+      value: ruleDraft.scope === "all" ? "All logged-in staff-training users" : ruleDraft.value.trim(),
+      enabled: true
+    };
+    persistRules([nextRule, ...accessRules]);
+    setRuleDraft({ resourceId: "all", scope: "all", value: "All logged-in staff-training users" });
+    setManagementFeedback("Access rule saved.");
+  };
+
+  const toggleRule = (ruleId: string) => {
+    persistRules(accessRules.map((rule) => (rule.id === ruleId ? { ...rule, enabled: !rule.enabled } : rule)));
+  };
+
+  const updateTextRecord = (id: string, value: string) => {
+    persistTextRecords(siteTextRecords.map((record) => (record.id === id ? { ...record, value } : record)));
+    setManagementFeedback("Site text saved. Refresh public pages in this browser to see local edits.");
   };
 
   return (
@@ -80,7 +206,7 @@ export function DashboardPage() {
           <p className="eyebrow">Dashboard</p>
           <h1>TableCraft account workspace</h1>
           <p>
-            Admins can review operational inquiries and service demand. Users can create a profile for consultation follow-up and training interests.
+            Admins manage learning resources, access, and site text. Users can save a profile and download approved staff-training materials.
           </p>
         </div>
       </section>
@@ -91,7 +217,7 @@ export function DashboardPage() {
             <LockKeyhole size={18} /> Admin
           </button>
           <button className={activeRole === "user" ? "active" : ""} type="button" onClick={() => setActiveRole("user")}>
-            <UserRound size={18} /> User profile
+            <UserRound size={18} /> User login
           </button>
         </div>
 
@@ -104,7 +230,7 @@ export function DashboardPage() {
               </div>
               {adminSession.authenticated ? (
                 <div className="profile-summary">
-                  <p>Admin profile can view service demand, inquiry summaries, and live operational status.</p>
+                  <p>Admin profile can manage resources, user access, relevant site text, inquiry summaries, and live operational status.</p>
                   <button className="button" type="button" onClick={handleAdminLogout}>Sign out</button>
                 </div>
               ) : (
@@ -136,6 +262,7 @@ export function DashboardPage() {
                   </button>
                 </div>
                 {error && <p className="form-feedback error">{error}</p>}
+                {managementFeedback && <p className="form-feedback success">{managementFeedback}</p>}
                 <div className="dashboard-status compact-status">
                   <Server size={22} />
                   <div>
@@ -158,6 +285,7 @@ export function DashboardPage() {
                       </article>
                     ))}
                 </div>
+
                 <div className="dashboard-grid">
                   <section className="dashboard-panel nested-panel">
                     <div className="panel-heading">
@@ -194,6 +322,100 @@ export function DashboardPage() {
                     )}
                   </section>
                 </div>
+                <div className="management-grid">
+                  <section className="dashboard-panel nested-panel management-panel">
+                    <div className="panel-heading">
+                      <p className="eyebrow">Learning resources</p>
+                      <h2>Upload staff-training material</h2>
+                    </div>
+                    <form className="dashboard-form" onSubmit={handleResourceUpload}>
+                      <label>
+                        Resource title
+                        <input value={resourceDraft.title} onChange={(event) => setResourceDraft((current) => ({ ...current, title: event.target.value }))} />
+                      </label>
+                      <label>
+                        Short description
+                        <textarea rows={3} value={resourceDraft.summary} onChange={(event) => setResourceDraft((current) => ({ ...current, summary: event.target.value }))} />
+                      </label>
+                      <label>
+                        Audience
+                        <input value={resourceDraft.audience} onChange={(event) => setResourceDraft((current) => ({ ...current, audience: event.target.value }))} />
+                      </label>
+                      <label>
+                        File
+                        <input type="file" onChange={(event) => setSelectedFile(event.target.files?.[0] ?? null)} />
+                      </label>
+                      <button className="button" type="submit"><Upload size={18} /> Upload resource</button>
+                    </form>
+                  </section>
+
+                  <section className="dashboard-panel nested-panel management-panel">
+                    <div className="panel-heading">
+                      <p className="eyebrow">Access control</p>
+                      <h2>Manage who can download</h2>
+                    </div>
+                    <form className="dashboard-form" onSubmit={addAccessRule}>
+                      <label>
+                        Resource
+                        <select value={ruleDraft.resourceId} onChange={(event) => setRuleDraft((current) => ({ ...current, resourceId: event.target.value }))}>
+                          <option value="all">All resources</option>
+                          {resources.map((resource) => <option key={resource.id} value={resource.id}>{resource.title}</option>)}
+                        </select>
+                      </label>
+                      <label>
+                        Access type
+                        <select value={ruleDraft.scope} onChange={(event) => setRuleDraft((current) => ({ ...current, scope: event.target.value as LearningResourceAccessRule["scope"] }))}>
+                          <option value="all">All logged-in users</option>
+                          <option value="email">Specific email</option>
+                          <option value="domain">Email domain</option>
+                        </select>
+                      </label>
+                      {ruleDraft.scope !== "all" && (
+                        <label>
+                          Value
+                          <input placeholder={ruleDraft.scope === "email" ? "manager@example.com" : "example.com"} value={ruleDraft.value} onChange={(event) => setRuleDraft((current) => ({ ...current, value: event.target.value }))} />
+                        </label>
+                      )}
+                      <button className="button" type="submit"><ShieldCheck size={18} /> Add access rule</button>
+                    </form>
+                    <div className="rule-list">
+                      {accessRules.map((rule) => (
+                        <button className={rule.enabled ? "rule-pill active" : "rule-pill"} key={rule.id} type="button" onClick={() => toggleRule(rule.id)}>
+                          {rule.enabled ? "Enabled" : "Disabled"} - {rule.scope}: {rule.value}
+                        </button>
+                      ))}
+                    </div>
+                  </section>
+                </div>
+
+                <section className="dashboard-panel nested-panel management-panel text-management-panel">
+                  <div className="panel-heading">
+                    <p className="eyebrow">Site text</p>
+                    <h2>Edit relevant page copy</h2>
+                  </div>
+                  <div className="text-record-grid">
+                    {siteTextRecords.map((record) => (
+                      <label className="text-record" key={record.id}>
+                        <span>{record.page} - {record.label}</span>
+                        <textarea rows={4} value={record.value} onChange={(event) => updateTextRecord(record.id, event.target.value)} />
+                      </label>
+                    ))}
+                  </div>
+                </section>
+
+                <div className="resource-admin-list">
+                  {resources.map((resource) => (
+                    <article className="resource-card" key={resource.id}>
+                      <FileText size={22} />
+                      <div>
+                        <strong>{resource.title}</strong>
+                        <span>{resource.audience}</span>
+                        <p>{resource.summary}</p>
+                        <small>{resource.fileName}</small>
+                      </div>
+                    </article>
+                  ))}
+                </div>
               </section>
             )}
           </div>
@@ -201,8 +423,8 @@ export function DashboardPage() {
           <div className="dashboard-account-grid user-account-grid">
             <section className="dashboard-panel auth-panel">
               <div className="panel-heading">
-                <p className="eyebrow">User profile</p>
-                <h2>Create your consultation profile.</h2>
+                <p className="eyebrow">User login</p>
+                <h2>Create your training access profile.</h2>
               </div>
               <form className="dashboard-form" onSubmit={saveUserProfile}>
                 <label>
@@ -212,6 +434,10 @@ export function DashboardPage() {
                 <label>
                   Email
                   <input type="email" value={userProfile.email} onChange={(event) => updateUserProfile("email", event.target.value)} />
+                </label>
+                <label>
+                  Password
+                  <input type="password" value={userProfile.password ?? ""} onChange={(event) => updateUserProfile("password", event.target.value)} />
                 </label>
                 <label>
                   Restaurant / Company
@@ -228,21 +454,38 @@ export function DashboardPage() {
                   Notes
                   <textarea rows={5} value={userProfile.notes} onChange={(event) => updateUserProfile("notes", event.target.value)} />
                 </label>
-                {userSaved && <p className="form-feedback success">Profile saved on this device.</p>}
-                <button className="button" type="submit">Save user profile</button>
-                <p className="auth-note">User profiles are saved privately in this browser until a database is connected.</p>
+                {userSaved && <p className="form-feedback success">Profile saved. Approved resources are available on the right.</p>}
+                <button className="button" type="submit"><Save size={18} /> Save user profile</button>
+                <p className="auth-note">User profiles and uploaded files are saved in this browser until a shared database or Vercel Blob is connected.</p>
               </form>
             </section>
             <section className="dashboard-panel profile-preview-panel">
               <ClipboardList size={28} />
-              <p className="eyebrow">Profile preview</p>
+              <p className="eyebrow">Learning access</p>
               <h2>{userProfile.name || "New TableCraft user"}</h2>
               <dl className="profile-list">
                 <div><dt>Email</dt><dd>{userProfile.email || "Not set"}</dd></div>
                 <div><dt>Company</dt><dd>{userProfile.company || "Not set"}</dd></div>
                 <div><dt>Interest</dt><dd>{userProfile.serviceInterest || "Not set"}</dd></div>
               </dl>
-              <p>{userProfile.notes || "Add notes about your restaurant goals, staff training needs, launch plans, or operational challenges."}</p>
+              <div className="download-list">
+                {permittedResources.length > 0 ? (
+                  permittedResources.map((resource) => (
+                    <article className="download-card" key={resource.id}>
+                      <div>
+                        <strong>{resource.title}</strong>
+                        <span>{resource.format}</span>
+                        <p>{resource.summary}</p>
+                      </div>
+                      <a className="button light" href={resource.downloadUrl} download={resource.fileName}>
+                        <Download size={18} /> Download
+                      </a>
+                    </article>
+                  ))
+                ) : (
+                  <p className="empty-state compact">Save your profile with an approved email to download staff-training resources.</p>
+                )}
+              </div>
             </section>
           </div>
         )}
