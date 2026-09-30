@@ -1,4 +1,4 @@
-import { MapPin, Menu, MessageCircle, Phone, X } from "lucide-react";
+import { MapPin, Menu, Phone, X } from "lucide-react";
 import { useState } from "react";
 import { Link, NavLink, Outlet } from "react-router-dom";
 import { contactDetails } from "../content/contactDetails";
@@ -38,8 +38,10 @@ export function Layout() {
         <Outlet />
       </main>
       <a className="whatsapp-float" href={contactDetails.whatsappUrl} target="_blank" rel="noreferrer" aria-label={contactDetails.whatsappLabel}>
-        <MessageCircle size={24} />
-        <span>WhatsApp Farhan</span>
+        <svg aria-hidden="true" viewBox="0 0 32 32" width="24" height="24" focusable="false">
+          <path d="M16 3.2c-7.05 0-12.8 5.58-12.8 12.45 0 2.34.68 4.62 1.96 6.58L3.6 28.8l6.78-1.5A13.05 13.05 0 0 0 16 28.1c7.05 0 12.8-5.58 12.8-12.45S23.05 3.2 16 3.2Zm0 22.54c-1.74 0-3.44-.44-4.94-1.27l-.36-.2-4.02.9.92-3.86-.24-.39a9.96 9.96 0 0 1-1.8-5.27c0-5.56 4.68-10.09 10.44-10.09s10.44 4.53 10.44 10.09S21.76 25.74 16 25.74Zm5.72-7.56c-.31-.15-1.84-.88-2.13-.98-.28-.11-.49-.15-.7.15-.2.3-.8.98-.98 1.18-.18.2-.36.22-.67.07-.31-.15-1.31-.47-2.49-1.5-.92-.8-1.54-1.79-1.72-2.09-.18-.3-.02-.46.14-.61.14-.14.31-.36.47-.54.16-.18.2-.3.31-.5.1-.2.05-.38-.03-.53-.08-.15-.7-1.63-.95-2.23-.25-.58-.5-.5-.7-.5h-.6c-.2 0-.53.07-.8.38-.28.3-1.06 1-1.06 2.45s1.09 2.85 1.24 3.05c.16.2 2.15 3.18 5.2 4.46.73.3 1.3.49 1.74.63.73.22 1.4.19 1.92.12.59-.09 1.84-.73 2.1-1.43.26-.7.26-1.3.18-1.43-.08-.13-.28-.2-.59-.35Z" />
+        </svg>
+        <span>WhatsApp</span>
       </a>
       <footer className="site-footer">
         <div className="footer-brand-block">
