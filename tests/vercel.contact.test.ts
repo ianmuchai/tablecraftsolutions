@@ -1,4 +1,5 @@
 import { describe, expect, test, vi } from "vitest";
+import { readFileSync } from "node:fs";
 import handler from "../api/contact";
 
 type MockRequest = {
@@ -31,6 +32,13 @@ function createResponse() {
 }
 
 describe("dedicated Vercel contact endpoint", () => {
+  test("stays self-contained to avoid deployment-time import failures", () => {
+    const source = readFileSync("api/contact.ts", "utf8");
+
+    expect(source).not.toContain("../backend/");
+    expect(source).not.toContain("node:");
+  });
+
   test("forwards a valid contact inquiry through Resend", async () => {
     const originalApiKey = process.env.RESEND_API_KEY;
     const originalToEmail = process.env.CONTACT_TO_EMAIL;
