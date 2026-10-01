@@ -99,7 +99,10 @@ app.post("/api/contact", async (request, response, next) => {
     }
 
     const submission = await saveContactSubmission(result.value);
-    const emailResult = await sendContactNotification(result.value);
+    const emailResult = await sendContactNotification(result.value).catch((emailError) => {
+      console.warn("Contact email notification failed unexpectedly", emailError);
+      return { sent: false as const, reason: "provider-error" as const };
+    });
     if (!emailResult.sent && emailResult.reason !== "not-configured") {
       console.warn("Contact email notification was not sent", emailResult);
     }

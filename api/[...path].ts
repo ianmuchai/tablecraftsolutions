@@ -209,7 +209,10 @@ export default async function handler(request: VercelRequest, response: VercelRe
         return response.status(400).json({ errors: result.errors });
       }
 
-      const emailResult = await sendContactNotification(result.value);
+      const emailResult = await sendContactNotification(result.value).catch((error) => {
+        console.warn("Contact email notification failed unexpectedly", error);
+        return { sent: false as const, reason: "provider-error" as const };
+      });
       if (!emailResult.sent && emailResult.reason !== "not-configured") {
         console.warn("Contact email notification was not sent", emailResult);
       }
