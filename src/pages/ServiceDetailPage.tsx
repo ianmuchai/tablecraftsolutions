@@ -8,7 +8,20 @@ import type { Service } from "../types";
 import { NotFoundPage } from "./NotFoundPage";
 
 const outcomeTooltip = (serviceTitle: string, item: string) => `Expected result for ${serviceTitle}: ${item}.`;
-const deliverableTooltip = (item: string) => `Included in this engagement: ${item}.`;
+
+const deliverableContexts: Record<string, string> = {
+  "restaurant-launch": "Pre-opening deliverable that turns the launch plan into a working restaurant system",
+  "menu-engineering": "Menu engineering tool built to clarify pricing, item performance, and selling priorities",
+  "operations-audits": "Operational audit output that shows managers exactly what to fix, sequence, and monitor",
+  "staff-training": "Training asset designed for daily team coaching, role clarity, and service consistency",
+  "brand-guest-experience": "Guest-experience guide that aligns brand promise with the actual moments guests feel",
+  "cost-control": "Cost-control instrument for purchasing discipline, stock visibility, and margin protection"
+};
+
+const deliverableTooltip = (service: Service, item: string) => {
+  const context = deliverableContexts[service.slug] ?? `${service.title} deliverable shaped for practical restaurant execution`;
+  return `${context}: ${item}.`;
+};
 
 export function ServiceDetailPage() {
   const { slug } = useParams();
@@ -57,7 +70,7 @@ export function ServiceDetailPage() {
           <h2>What you receive</h2>
           <ul className="check-list">
             {service.deliverables.map((item) => (
-              <li className="hover-explainer" data-tooltip={deliverableTooltip(item)} key={item} tabIndex={0}>
+              <li className="hover-explainer" data-tooltip={deliverableTooltip(service, item)} key={item} tabIndex={0}>
                 <CheckCircle2 size={18} /> {item}
               </li>
             ))}

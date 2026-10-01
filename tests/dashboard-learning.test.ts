@@ -21,12 +21,16 @@ describe("mobile navigation CSS", () => {
 });
 
 describe("service detail hover descriptions", () => {
-  test("adds tooltip descriptions to service outcomes and deliverables", () => {
+  test("adds specific tooltip descriptions to service outcomes and deliverables", () => {
     const source = readFileSync("src/pages/ServiceDetailPage.tsx", "utf8");
 
     expect(source).toContain("data-tooltip");
     expect(source).toContain("hover-explainer");
     expect(source).toContain("tabIndex={0}");
+    expect(source).not.toContain("Included in this engagement");
+    expect(source).toContain("Pre-opening deliverable");
+    expect(source).toContain("Menu engineering tool");
+    expect(source).toContain("Training asset");
   });
 });
 
