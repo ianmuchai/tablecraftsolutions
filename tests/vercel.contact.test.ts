@@ -83,4 +83,33 @@ describe("dedicated Vercel contact endpoint", () => {
     else process.env.CONTACT_TO_EMAIL = originalToEmail;
     vi.unstubAllGlobals();
   });
+
+  test("reports when email forwarding is not configured", async () => {
+    const originalApiKey = process.env.RESEND_API_KEY;
+    delete process.env.RESEND_API_KEY;
+
+    const { response, result } = createResponse();
+    await handler(
+      {
+        method: "POST",
+        body: {
+          name: "Farah Ali",
+          email: "farah@example.com",
+          phone: "0794000000",
+          company: "Kilimani Cafe",
+          service: "staff-training",
+          message: "We want to book a consultation for staff training."
+        }
+      } satisfies MockRequest,
+      response
+    );
+
+    expect(result().statusCode).toBe(201);
+    expect(result().payload).toMatchObject({
+      email: { forwarded: false, reason: "not-configured" }
+    });
+
+    if (originalApiKey === undefined) delete process.env.RESEND_API_KEY;
+    else process.env.RESEND_API_KEY = originalApiKey;
+  });
 });

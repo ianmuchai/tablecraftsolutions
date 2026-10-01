@@ -155,6 +155,6 @@ export default async function handler(request: VercelRequest, response: VercelRe
       id: `contact-${Date.now()}`,
       createdAt: new Date().toISOString()
     },
-    email: { forwarded: emailResult.sent }
+    email: emailResult.sent ? { forwarded: true } : { forwarded: false, reason: emailResult.reason }
   });
 }
