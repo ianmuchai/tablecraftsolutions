@@ -1,9 +1,10 @@
 import { ArrowLeft, BookOpen, CheckCircle2, GraduationCap, Laptop, TrendingUp, UsersRound } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { getService } from "../api/client";
+import { getServices } from "../api/client";
 import { CtaBand } from "../components/sections";
 import { editableText } from "../content/learningResources";
+import { mergeManagedServices, readManagedServices } from "../content/managedContent";
 import type { Service } from "../types";
 import { NotFoundPage } from "./NotFoundPage";
 
@@ -31,8 +32,15 @@ export function ServiceDetailPage() {
   useEffect(() => {
     if (!slug) return;
     setMissing(false);
-    getService(slug)
-      .then(setService)
+    getServices()
+      .then((items) => {
+        const matchedService = readManagedServices(mergeManagedServices(items)).find((item) => item.slug === slug);
+        if (!matchedService) {
+          setMissing(true);
+          return;
+        }
+        setService(matchedService);
+      })
       .catch(() => setMissing(true));
   }, [slug]);
 

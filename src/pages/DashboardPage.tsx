@@ -12,6 +12,7 @@ import {
   Search,
   Server,
   ShieldCheck,
+  Trash2,
   Upload,
   UserRound
 } from "lucide-react";
@@ -29,14 +30,17 @@ import {
   learningResourcesStorageKey,
   siteTextStorageKey
 } from "../content/learningResources";
+import { customCaseStudiesStorageKey, customServicesStorageKey, serviceSlugFromTitle } from "../content/managedContent";
 import type { CSSProperties } from "react";
 import type {
   AdminSession,
+  CaseStudy,
   DashboardSummary,
   DashboardUserAccount,
   DashboardUserProfile,
   LearningResourceAccessRule,
   ManagedLearningResource,
+  Service,
   SiteTextRecord
 } from "../types";
 
@@ -62,6 +66,31 @@ const loadStoredProfile = (): DashboardUserProfile => {
   return { ...defaultUserProfile, ...stored, role: "user" };
 };
 
+const emptyServiceDraft = {
+  title: "",
+  slug: "",
+  eyebrow: "",
+  summary: "",
+  description: "",
+  outcomes: "",
+  deliverables: ""
+};
+
+const emptyCaseStudyDraft = {
+  title: "",
+  slug: "",
+  category: "",
+  summary: "",
+  metrics: ""
+};
+
+function listFromLines(value: string) {
+  return value
+    .split(/\r?\n/)
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
 export function DashboardPage() {
   const [summary, setSummary] = useState<DashboardSummary | null>(null);
   const [error, setError] = useState("");
@@ -79,6 +108,10 @@ export function DashboardPage() {
   const [resources, setResources] = useState<ManagedLearningResource[]>(defaultManagedLearningResources);
   const [accessRules, setAccessRules] = useState<LearningResourceAccessRule[]>(defaultLearningResourceAccessRules);
   const [siteTextRecords, setSiteTextRecords] = useState<SiteTextRecord[]>(defaultSiteTextRecords);
+  const [customServices, setCustomServices] = useState<Service[]>([]);
+  const [customCaseStudies, setCustomCaseStudies] = useState<CaseStudy[]>([]);
+  const [serviceDraft, setServiceDraft] = useState(emptyServiceDraft);
+  const [caseStudyDraft, setCaseStudyDraft] = useState(emptyCaseStudyDraft);
   const [selectedContentPage, setSelectedContentPage] = useState("Home");
   const [contentSearch, setContentSearch] = useState("");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -132,6 +165,8 @@ export function DashboardPage() {
     setResources(loadJson(learningResourcesStorageKey, defaultManagedLearningResources));
     setAccessRules(loadJson(learningAccessRulesStorageKey, defaultLearningResourceAccessRules));
     setSiteTextRecords(mergeSiteTextRecords(loadJson<SiteTextRecord[] | null>(siteTextStorageKey, null)));
+    setCustomServices(loadJson(customServicesStorageKey, []));
+    setCustomCaseStudies(loadJson(customCaseStudiesStorageKey, []));
   }, []);
 
   const handleAdminLogin = async (event: FormEvent<HTMLFormElement>) => {
@@ -211,6 +246,73 @@ export function DashboardPage() {
   const persistTextRecords = (nextRecords: SiteTextRecord[]) => {
     setSiteTextRecords(nextRecords);
     saveJson(siteTextStorageKey, nextRecords);
+  };
+
+  const persistCustomServices = (nextServices: Service[]) => {
+    setCustomServices(nextServices);
+    saveJson(customServicesStorageKey, nextServices);
+  };
+
+  const persistCustomCaseStudies = (nextCaseStudies: CaseStudy[]) => {
+    setCustomCaseStudies(nextCaseStudies);
+    saveJson(customCaseStudiesStorageKey, nextCaseStudies);
+  };
+
+  const handleAddService = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const title = serviceDraft.title.trim();
+    const slug = serviceSlugFromTitle(serviceDraft.slug.trim() || title);
+    const summary = serviceDraft.summary.trim();
+    const description = serviceDraft.description.trim();
+    if (!title || !summary || !description) {
+      setManagementFeedback("Add a service title, summary, and detail description before saving.");
+      return;
+    }
+
+    const nextService: Service = {
+      slug,
+      title,
+      eyebrow: serviceDraft.eyebrow.trim() || "Consultancy service",
+      summary,
+      description,
+      outcomes: listFromLines(serviceDraft.outcomes),
+      deliverables: listFromLines(serviceDraft.deliverables)
+    };
+    persistCustomServices([nextService, ...customServices.filter((service) => service.slug !== slug)]);
+    setServiceDraft(emptyServiceDraft);
+    setManagementFeedback("Service saved. Refresh the Services page in this browser to see the update.");
+  };
+
+  const handleAddCaseStudy = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const title = caseStudyDraft.title.trim();
+    const slug = serviceSlugFromTitle(caseStudyDraft.slug.trim() || title);
+    const summary = caseStudyDraft.summary.trim();
+    if (!title || !summary) {
+      setManagementFeedback("Add a case study title and summary before saving.");
+      return;
+    }
+
+    const nextCaseStudy: CaseStudy = {
+      slug,
+      title,
+      category: caseStudyDraft.category.trim() || "Restaurant consultancy",
+      summary,
+      metrics: listFromLines(caseStudyDraft.metrics)
+    };
+    persistCustomCaseStudies([nextCaseStudy, ...customCaseStudies.filter((study) => study.slug !== slug)]);
+    setCaseStudyDraft(emptyCaseStudyDraft);
+    setManagementFeedback("Case study saved. Refresh the Case Studies page in this browser to see the update.");
+  };
+
+  const deleteCustomService = (slug: string) => {
+    persistCustomServices(customServices.filter((service) => service.slug !== slug));
+    setManagementFeedback("Service removed from the admin-added list.");
+  };
+
+  const deleteCustomCaseStudy = (slug: string) => {
+    persistCustomCaseStudies(customCaseStudies.filter((study) => study.slug !== slug));
+    setManagementFeedback("Case study removed from the admin-added list.");
   };
 
   const handleResourceUpload = (event: FormEvent<HTMLFormElement>) => {
@@ -456,6 +558,134 @@ export function DashboardPage() {
                     </div>
                   </section>
                 </div>
+
+                <section className="dashboard-panel nested-panel management-panel managed-content-panel">
+                  <div className="panel-heading content-manager-heading">
+                    <div>
+                      <p className="eyebrow">Public content library</p>
+                      <h2>Services and case studies</h2>
+                      <p>Add new consultancy services and client examples without removing the existing TableCraft content. Reuse a slug to update an admin-created item.</p>
+                    </div>
+                    <span className="content-count">{customServices.length + customCaseStudies.length} added</span>
+                  </div>
+
+                  <div className="managed-content-grid">
+                    <form className="dashboard-form managed-content-form" onSubmit={handleAddService}>
+                      <div className="form-section-heading">
+                        <ClipboardList size={20} />
+                        <div>
+                          <strong>Add service</strong>
+                          <span>Create a new service card and detail page.</span>
+                        </div>
+                      </div>
+                      <label>
+                        Service title
+                        <input value={serviceDraft.title} onChange={(event) => setServiceDraft((current) => ({ ...current, title: event.target.value }))} />
+                      </label>
+                      <label>
+                        Slug
+                        <input placeholder="Auto-generated if left blank" value={serviceDraft.slug} onChange={(event) => setServiceDraft((current) => ({ ...current, slug: event.target.value }))} />
+                      </label>
+                      <label>
+                        Card label
+                        <input placeholder="Example: Growth strategy" value={serviceDraft.eyebrow} onChange={(event) => setServiceDraft((current) => ({ ...current, eyebrow: event.target.value }))} />
+                      </label>
+                      <label>
+                        Card summary
+                        <textarea rows={3} value={serviceDraft.summary} onChange={(event) => setServiceDraft((current) => ({ ...current, summary: event.target.value }))} />
+                      </label>
+                      <label>
+                        Detail description
+                        <textarea rows={4} value={serviceDraft.description} onChange={(event) => setServiceDraft((current) => ({ ...current, description: event.target.value }))} />
+                      </label>
+                      <label>
+                        Outcomes
+                        <textarea rows={4} placeholder="One outcome per line" value={serviceDraft.outcomes} onChange={(event) => setServiceDraft((current) => ({ ...current, outcomes: event.target.value }))} />
+                      </label>
+                      <label>
+                        Deliverables
+                        <textarea rows={4} placeholder="One deliverable per line" value={serviceDraft.deliverables} onChange={(event) => setServiceDraft((current) => ({ ...current, deliverables: event.target.value }))} />
+                      </label>
+                      <button className="button" type="submit"><Save size={18} /> Add service</button>
+                    </form>
+
+                    <form className="dashboard-form managed-content-form" onSubmit={handleAddCaseStudy}>
+                      <div className="form-section-heading">
+                        <Activity size={20} />
+                        <div>
+                          <strong>Add case study</strong>
+                          <span>Publish a new result-focused project example.</span>
+                        </div>
+                      </div>
+                      <label>
+                        Case study title
+                        <input value={caseStudyDraft.title} onChange={(event) => setCaseStudyDraft((current) => ({ ...current, title: event.target.value }))} />
+                      </label>
+                      <label>
+                        Slug
+                        <input placeholder="Auto-generated if left blank" value={caseStudyDraft.slug} onChange={(event) => setCaseStudyDraft((current) => ({ ...current, slug: event.target.value }))} />
+                      </label>
+                      <label>
+                        Category
+                        <input placeholder="Example: Staff Training" value={caseStudyDraft.category} onChange={(event) => setCaseStudyDraft((current) => ({ ...current, category: event.target.value }))} />
+                      </label>
+                      <label>
+                        Summary
+                        <textarea rows={4} value={caseStudyDraft.summary} onChange={(event) => setCaseStudyDraft((current) => ({ ...current, summary: event.target.value }))} />
+                      </label>
+                      <label>
+                        Results and metrics
+                        <textarea rows={5} placeholder="One result per line" value={caseStudyDraft.metrics} onChange={(event) => setCaseStudyDraft((current) => ({ ...current, metrics: event.target.value }))} />
+                      </label>
+                      <button className="button" type="submit"><Save size={18} /> Add case study</button>
+                    </form>
+                  </div>
+
+                  <div className="managed-content-lists">
+                    <div>
+                      <h3>Admin-added services</h3>
+                      {customServices.length > 0 ? (
+                        <div className="admin-item-list">
+                          {customServices.map((service) => (
+                            <article className="admin-content-item" key={service.slug}>
+                              <div>
+                                <strong>{service.title}</strong>
+                                <span>{service.slug}</span>
+                                <p>{service.summary}</p>
+                              </div>
+                              <button className="icon-action danger" type="button" aria-label={`Remove ${service.title}`} onClick={() => deleteCustomService(service.slug)}>
+                                <Trash2 size={18} />
+                              </button>
+                            </article>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="empty-state compact">No admin-added services yet.</p>
+                      )}
+                    </div>
+                    <div>
+                      <h3>Admin-added case studies</h3>
+                      {customCaseStudies.length > 0 ? (
+                        <div className="admin-item-list">
+                          {customCaseStudies.map((study) => (
+                            <article className="admin-content-item" key={study.slug}>
+                              <div>
+                                <strong>{study.title}</strong>
+                                <span>{study.category}</span>
+                                <p>{study.summary}</p>
+                              </div>
+                              <button className="icon-action danger" type="button" aria-label={`Remove ${study.title}`} onClick={() => deleteCustomCaseStudy(study.slug)}>
+                                <Trash2 size={18} />
+                              </button>
+                            </article>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="empty-state compact">No admin-added case studies yet.</p>
+                      )}
+                    </div>
+                  </div>
+                </section>
 
                 <section className="dashboard-panel nested-panel management-panel text-management-panel">
                   <div className="panel-heading content-manager-heading">

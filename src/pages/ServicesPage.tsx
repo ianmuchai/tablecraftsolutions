@@ -2,13 +2,14 @@ import { useEffect, useState } from "react";
 import { getServices } from "../api/client";
 import { PageHero, ServiceGrid } from "../components/sections";
 import { editableText } from "../content/learningResources";
+import { mergeManagedServices, readManagedServices } from "../content/managedContent";
 import type { Service } from "../types";
 
 export function ServicesPage() {
   const [services, setServices] = useState<Service[]>([]);
 
   useEffect(() => {
-    getServices().then(setServices).catch(() => setServices([]));
+    getServices().then((items) => setServices(readManagedServices(mergeManagedServices(items)))).catch(() => setServices([]));
   }, []);
 
   return (

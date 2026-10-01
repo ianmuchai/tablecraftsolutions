@@ -2,13 +2,14 @@ import { useEffect, useState } from "react";
 import { getCaseStudies } from "../api/client";
 import { CaseStudyGrid, PageHero } from "../components/sections";
 import { editableText } from "../content/learningResources";
+import { mergeManagedCaseStudies, readManagedCaseStudies } from "../content/managedContent";
 import type { CaseStudy } from "../types";
 
 export function CaseStudiesPage() {
   const [caseStudies, setCaseStudies] = useState<CaseStudy[]>([]);
 
   useEffect(() => {
-    getCaseStudies().then(setCaseStudies).catch(() => setCaseStudies([]));
+    getCaseStudies().then((items) => setCaseStudies(readManagedCaseStudies(mergeManagedCaseStudies(items)))).catch(() => setCaseStudies([]));
   }, []);
 
   return (
