@@ -66,6 +66,13 @@ describe("learning resource access controls", () => {
     expect(resolveSiteText("home.hero.copy")).toContain("standards, systems");
   });
 
+
+  test("gives the admin workspace more horizontal space than the sign-in card", () => {
+    const css = readFileSync("src/styles.css", "utf8");
+
+    expect(css).toContain("grid-template-columns: minmax(220px, 0.58fr) minmax(0, 1.42fr);");
+  });
+
   test("supports friendly dashboard controls for managing site copy", () => {
     const source = readFileSync("src/pages/DashboardPage.tsx", "utf8");
     const css = readFileSync("src/styles.css", "utf8");

@@ -2138,7 +2138,7 @@ svg {
 
 .dashboard-account-grid {
   display: grid;
-  grid-template-columns: minmax(280px, 0.82fr) minmax(0, 1.18fr);
+  grid-template-columns: minmax(220px, 0.58fr) minmax(0, 1.42fr);
   gap: 22px;
   align-items: start;
 }
