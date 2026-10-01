@@ -287,7 +287,6 @@ export function DashboardPage() {
                   </label>
                   {adminFeedback && <p className="form-feedback error">{adminFeedback}</p>}
                   <button className="button" type="submit">Sign in</button>
-                  <p className="auth-note">Set `ADMIN_PASSWORD` and `AUTH_SECRET` in Vercel before using production admin login.</p>
                 </form>
               )}
             </section>

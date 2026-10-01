@@ -18,13 +18,21 @@ type ApiErrorPayload = {
   errors?: string[];
 };
 
+function publicApiErrorMessage(message: string): string {
+  if (message === "Admin login is not configured.") {
+    return "Admin access is temporarily unavailable. Please try again later.";
+  }
+
+  return message;
+}
+
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
   const response = await fetch(path, options);
   const data = (await response.json().catch(() => ({}))) as T & ApiErrorPayload;
 
   if (!response.ok) {
     const message = data.errors?.join(" ") || data.error || `Request failed with status ${response.status}.`;
-    throw new Error(message);
+    throw new Error(publicApiErrorMessage(message));
   }
 
   return data;

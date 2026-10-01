@@ -1,4 +1,5 @@
 import { describe, expect, test, vi } from "vitest";
+import { readFileSync } from "node:fs";
 import { getAdminSession, getCompanyProfile, getDashboardSummary, getService, getServices, loginAdmin, logoutAdmin, submitContact } from "../src/api/client";
 import { defaultUserProfile } from "../src/content/dashboardUsers";
 
@@ -141,6 +142,28 @@ describe("dashboard auth client", () => {
 
     await expect(getAdminSession()).resolves.toEqual({ authenticated: true, role: "admin", name: "Farhan" });
     await expect(logoutAdmin()).resolves.toEqual({ authenticated: false });
+  });
+
+  test("does not expose production setup wording on the dashboard page", () => {
+    const dashboardSource = readFileSync("src/pages/DashboardPage.tsx", "utf8");
+
+    expect(dashboardSource).not.toContain("Set `ADMIN_PASSWORD`");
+    expect(dashboardSource).not.toContain("AUTH_SECRET");
+  });
+
+  test("shows a public-safe admin setup message when production auth is unavailable", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        ok: false,
+        status: 503,
+        json: async () => ({ error: "Admin login is not configured." })
+      })
+    );
+
+    await expect(loginAdmin({ username: "Farhan", password: "secret" })).rejects.toThrow(
+      "Admin access is temporarily unavailable. Please try again later."
+    );
   });
 
   test("provides safe default user profile values", () => {
