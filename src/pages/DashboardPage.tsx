@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { getAdminSession, getDashboardSummary, loginAdmin, logoutAdmin } from "../api/client";
-import { createUserSession, dashboardServiceInterests, defaultUserProfile, storeUserSession, userProfileStorageKey } from "../content/dashboardUsers";
+import { dashboardServiceInterests, defaultUserProfile, loginUserAccount, readStoredUserSession, registerUserAccount, storeUserSession, userAccountsStorageKey, userProfileStorageKey } from "../content/dashboardUsers";
 import {
   canUserDownloadResource,
   defaultLearningResourceAccessRules,
@@ -29,6 +29,7 @@ import type { CSSProperties } from "react";
 import type {
   AdminSession,
   DashboardSummary,
+  DashboardUserAccount,
   DashboardUserProfile,
   LearningResourceAccessRule,
   ManagedLearningResource,
@@ -66,6 +67,10 @@ export function DashboardPage() {
   const [adminCredentials, setAdminCredentials] = useState({ username: "Farhan", password: "" });
   const [adminFeedback, setAdminFeedback] = useState("");
   const [userProfile, setUserProfile] = useState<DashboardUserProfile>(defaultUserProfile);
+  const [userAccounts, setUserAccounts] = useState<DashboardUserAccount[]>([]);
+  const [userAuthMode, setUserAuthMode] = useState<"create" | "login">("create");
+  const [userLogin, setUserLogin] = useState({ email: "", password: "" });
+  const [userFeedback, setUserFeedback] = useState("");
   const [userSaved, setUserSaved] = useState(false);
   const [resources, setResources] = useState<ManagedLearningResource[]>(defaultManagedLearningResources);
   const [accessRules, setAccessRules] = useState<LearningResourceAccessRule[]>(defaultLearningResourceAccessRules);
@@ -129,14 +134,45 @@ export function DashboardPage() {
 
   const saveUserProfile = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    setUserFeedback("");
+    const result = registerUserAccount(userAccounts, userProfile);
+    if (result.error) {
+      setUserSaved(false);
+      setUserFeedback(result.error);
+      return;
+    }
+
+    setUserAccounts(result.accounts);
+    saveJson(userAccountsStorageKey, result.accounts);
     saveJson(userProfileStorageKey, userProfile);
-    storeUserSession(createUserSession(userProfile));
+    storeUserSession(null);
     setUserSaved(true);
+    setUserFeedback(result.message ?? "Account created. Please log in with your email and password.");
+    setUserAuthMode("login");
+    setUserLogin({ email: userProfile.email, password: "" });
+  };
+
+  const handleUserLogin = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setUserFeedback("");
+    const result = loginUserAccount(userAccounts, userLogin.email, userLogin.password);
+    if (result.error || !result.session || !result.profile) {
+      setUserSaved(false);
+      setUserFeedback(result.error ?? "Invalid email or password.");
+      return;
+    }
+
+    setUserProfile({ ...defaultUserProfile, ...result.profile, role: "user" });
+    saveJson(userProfileStorageKey, result.profile);
+    storeUserSession(result.session);
+    setUserSaved(true);
+    setUserFeedback(`Logged in as ${result.session.firstName}.`);
   };
 
   const handleUserLogout = () => {
     storeUserSession(null);
     setUserSaved(false);
+    setUserFeedback("Signed out.");
   };
 
   const persistResources = (nextResources: ManagedLearningResource[]) => {
@@ -426,56 +462,79 @@ export function DashboardPage() {
             )}
           </div>
         ) : (
-          <div className="dashboard-account-grid user-account-grid">
-            <section className="dashboard-panel auth-panel">
-              <div className="panel-heading">
-                <p className="eyebrow">User login</p>
-                <h2>Create your training access profile.</h2>
+          <div className="user-auth-workspace">
+            <section className="auth-surface">
+              <div className="auth-mode-switch" aria-label="User account mode">
+                <button className={userAuthMode === "create" ? "active" : ""} type="button" onClick={() => setUserAuthMode("create")}>Create account</button>
+                <button className={userAuthMode === "login" ? "active" : ""} type="button" onClick={() => setUserAuthMode("login")}>Log in</button>
               </div>
-              <form className="dashboard-form" onSubmit={saveUserProfile}>
-                <label>
-                  Full name
-                  <input value={userProfile.name} onChange={(event) => updateUserProfile("name", event.target.value)} />
-                </label>
-                <label>
-                  Email
-                  <input type="email" value={userProfile.email} onChange={(event) => updateUserProfile("email", event.target.value)} />
-                </label>
-                <label>
-                  Password
-                  <input type="password" value={userProfile.password ?? ""} onChange={(event) => updateUserProfile("password", event.target.value)} />
-                </label>
-                <label>
-                  Restaurant / Company
-                  <input value={userProfile.company} onChange={(event) => updateUserProfile("company", event.target.value)} />
-                </label>
-                <label>
-                  Service interest
-                  <select value={userProfile.serviceInterest} onChange={(event) => updateUserProfile("serviceInterest", event.target.value)}>
-                    <option value="">Choose an interest</option>
-                    {dashboardServiceInterests.map((interest) => <option key={interest} value={interest}>{interest}</option>)}
-                  </select>
-                </label>
-                <label>
-                  Notes
-                  <textarea rows={5} value={userProfile.notes} onChange={(event) => updateUserProfile("notes", event.target.value)} />
-                </label>
-                {userSaved && <p className="form-feedback success">Profile saved. You are now logged in, and your name will show in the site header.</p>}
-                <div className="form-actions-inline"><button className="button" type="submit"><Save size={18} /> Save and log in</button><button className="button light" type="button" onClick={handleUserLogout}>Sign out</button></div>
-                <p className="auth-note">User profiles and uploaded files are saved in this browser until a shared database or Vercel Blob is connected.</p>
-              </form>
+
+              {userAuthMode === "create" ? (
+                <form className="dashboard-form auth-form" onSubmit={saveUserProfile}>
+                  <div className="panel-heading">
+                    <p className="eyebrow">Create account</p>
+                    <h2>Set up your learning access.</h2>
+                  </div>
+                  <label>
+                    Full name
+                    <input value={userProfile.name} onChange={(event) => updateUserProfile("name", event.target.value)} />
+                  </label>
+                  <label>
+                    Email
+                    <input type="email" value={userProfile.email} onChange={(event) => updateUserProfile("email", event.target.value)} />
+                  </label>
+                  <label>
+                    Password
+                    <input type="password" value={userProfile.password ?? ""} onChange={(event) => updateUserProfile("password", event.target.value)} />
+                  </label>
+                  <label>
+                    Restaurant / Company
+                    <input value={userProfile.company} onChange={(event) => updateUserProfile("company", event.target.value)} />
+                  </label>
+                  <label>
+                    Service interest
+                    <select value={userProfile.serviceInterest} onChange={(event) => updateUserProfile("serviceInterest", event.target.value)}>
+                      <option value="">Choose an interest</option>
+                      {dashboardServiceInterests.map((interest) => <option key={interest} value={interest}>{interest}</option>)}
+                    </select>
+                  </label>
+                  <label>
+                    Notes
+                    <textarea rows={4} value={userProfile.notes} onChange={(event) => updateUserProfile("notes", event.target.value)} />
+                  </label>
+                  {userFeedback && <p className={userSaved ? "form-feedback success" : "form-feedback error"}>{userFeedback}</p>}
+                  <button className="button" type="submit"><Save size={18} /> Create account</button>
+                </form>
+              ) : (
+                <form className="dashboard-form auth-form" onSubmit={handleUserLogin}>
+                  <div className="panel-heading">
+                    <p className="eyebrow">User login</p>
+                    <h2>Log in to download learning resources.</h2>
+                  </div>
+                  <label>
+                    Email
+                    <input type="email" value={userLogin.email} onChange={(event) => setUserLogin((current) => ({ ...current, email: event.target.value }))} />
+                  </label>
+                  <label>
+                    Password
+                    <input type="password" value={userLogin.password} onChange={(event) => setUserLogin((current) => ({ ...current, password: event.target.value }))} />
+                  </label>
+                  {userFeedback && <p className={userSaved ? "form-feedback success" : "form-feedback error"}>{userFeedback}</p>}
+                  <div className="form-actions-inline">
+                    <button className="button" type="submit"><UserRound size={18} /> Log in</button>
+                    <button className="button light" type="button" onClick={handleUserLogout}>Sign out</button>
+                  </div>
+                </form>
+              )}
             </section>
-            <section className="dashboard-panel profile-preview-panel">
-              <ClipboardList size={28} />
-              <p className="eyebrow">Learning access</p>
-              <h2>{userProfile.name || "New TableCraft user"}</h2>
-              <dl className="profile-list">
-                <div><dt>Email</dt><dd>{userProfile.email || "Not set"}</dd></div>
-                <div><dt>Company</dt><dd>{userProfile.company || "Not set"}</dd></div>
-                <div><dt>Interest</dt><dd>{userProfile.serviceInterest || "Not set"}</dd></div>
-              </dl>
+
+            <section className="learning-access-surface">
+              <div className="panel-heading">
+                <p className="eyebrow">Learning resources</p>
+                <h2>{userSaved ? `${userProfile.name || "Logged-in user"} is logged in` : "Log in to access downloads"}</h2>
+              </div>
               <div className="download-list">
-                {permittedResources.length > 0 ? (
+                {userSaved && permittedResources.length > 0 ? (
                   permittedResources.map((resource) => (
                     <article className="download-card" key={resource.id}>
                       <div>
@@ -489,7 +548,7 @@ export function DashboardPage() {
                     </article>
                   ))
                 ) : (
-                  <p className="empty-state compact">Save your profile with an approved email to download staff-training resources.</p>
+                  <p className="empty-state compact">Create an account, then log in with your password to download approved staff-training resources.</p>
                 )}
               </div>
             </section>

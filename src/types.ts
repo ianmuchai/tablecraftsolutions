@@ -143,6 +143,10 @@ export type AdminLoginPayload = {
   password: string;
 };
 
+export type DashboardUserAccount = DashboardUserProfile & {
+  id: string;
+  createdAt: string;
+};
 export type DashboardUserSession = {
   authenticated: true;
   name: string;

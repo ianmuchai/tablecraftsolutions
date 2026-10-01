@@ -2855,3 +2855,69 @@ svg {
     grid-template-columns: 1fr;
   }
 }
+
+/* Standard user account flow */
+.user-auth-workspace {
+  display: grid;
+  grid-template-columns: minmax(280px, 0.9fr) minmax(0, 1.1fr);
+  gap: 22px;
+  align-items: start;
+}
+
+.auth-surface,
+.learning-access-surface {
+  padding: 30px 0;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  background: transparent;
+}
+
+.auth-mode-switch {
+  display: inline-flex;
+  gap: 6px;
+  margin-bottom: 22px;
+  padding: 5px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--mist);
+}
+
+.auth-mode-switch button {
+  min-height: 42px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--teal-950);
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.auth-mode-switch button.active {
+  background: #fff;
+  box-shadow: 0 8px 18px rgba(0, 61, 70, 0.08);
+}
+
+.auth-form {
+  max-width: 620px;
+}
+
+.learning-access-surface .download-list {
+  margin-top: 8px;
+}
+
+@media (max-width: 860px) {
+  .user-auth-workspace {
+    grid-template-columns: 1fr;
+  }
+
+  .auth-surface,
+  .learning-access-surface {
+    padding: 22px 0;
+  }
+
+  .auth-mode-switch,
+  .auth-mode-switch button {
+    width: 100%;
+  }
+}
