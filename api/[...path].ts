@@ -1,5 +1,6 @@
 import { createHmac, randomUUID, timingSafeEqual } from "node:crypto";
 import { caseStudies, companyProfile, insights, services, testimonials } from "../backend/data/content";
+import { sendContactNotification } from "../backend/lib/email";
 import { validateContactPayload } from "../backend/lib/validation";
 
 type VercelRequest = {
@@ -208,15 +209,20 @@ export default async function handler(request: VercelRequest, response: VercelRe
         return response.status(400).json({ errors: result.errors });
       }
 
+      const emailResult = await sendContactNotification(result.value);
+      if (!emailResult.sent && emailResult.reason !== "not-configured") {
+        console.warn("Contact email notification was not sent", emailResult);
+      }
+
       return response.status(201).json({
         message: "Inquiry received.",
         submission: {
           id: randomUUID(),
           createdAt: new Date().toISOString()
-        }
+        },
+        email: { forwarded: emailResult.sent }
       });
     }
-
     return sendNotFound(response);
   } catch (error) {
     console.error(error);

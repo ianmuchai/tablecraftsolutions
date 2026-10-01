@@ -1,4 +1,4 @@
-import { describe, expect, test } from "vitest";
+import { describe, expect, test, vi } from "vitest";
 import handler from "../api/[...path]";
 
 type MockRequest = {
@@ -68,6 +68,72 @@ describe("Vercel API handler", () => {
     });
   });
 
+  test("forwards valid consultation inquiries to the TableCraft email inbox", async () => {
+    const originalApiKey = process.env.RESEND_API_KEY;
+    const originalToEmail = process.env.CONTACT_TO_EMAIL;
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true, json: async () => ({ id: "email-1" }) });
+    process.env.RESEND_API_KEY = "test-resend-key";
+    process.env.CONTACT_TO_EMAIL = "tablecraftsolutions@gmail.com";
+    vi.stubGlobal("fetch", fetchMock);
+
+    const result = await callApi({
+      method: "POST",
+      url: "/api/contact",
+      query: { path: "contact" },
+      body: {
+        name: "Farah Ali",
+        email: "farah@example.com",
+        phone: "0794000000",
+        company: "Kilimani Cafe",
+        service: "staff-training",
+        message: "We want to book a consultation for staff training."
+      }
+    });
+
+    expect(result.statusCode).toBe(201);
+    expect(fetchMock).toHaveBeenCalledWith(
+      "https://api.resend.com/emails",
+      expect.objectContaining({
+        method: "POST",
+        headers: expect.objectContaining({ Authorization: "Bearer test-resend-key" })
+      })
+    );
+    const body = JSON.parse(fetchMock.mock.calls[0][1].body);
+    expect(body.to).toEqual(["tablecraftsolutions@gmail.com"]);
+    expect(body.reply_to).toBe("farah@example.com");
+    expect(body.subject).toContain("TableCraft consultation inquiry");
+
+    if (originalApiKey === undefined) delete process.env.RESEND_API_KEY;
+    else process.env.RESEND_API_KEY = originalApiKey;
+    if (originalToEmail === undefined) delete process.env.CONTACT_TO_EMAIL;
+    else process.env.CONTACT_TO_EMAIL = originalToEmail;
+    vi.unstubAllGlobals();
+  });
+
+  test("still accepts consultation inquiries when email forwarding is not configured", async () => {
+    const originalApiKey = process.env.RESEND_API_KEY;
+    delete process.env.RESEND_API_KEY;
+
+    const result = await callApi({
+      method: "POST",
+      url: "/api/contact",
+      query: { path: "contact" },
+      body: {
+        name: "Farah Ali",
+        email: "farah@example.com",
+        phone: "0794000000",
+        company: "Kilimani Cafe",
+        service: "staff-training",
+        message: "We want to book a consultation for staff training."
+      }
+    });
+
+    expect(result.statusCode).toBe(201);
+    expect(result.payload).toMatchObject({ message: "Inquiry received." });
+
+    if (originalApiKey === undefined) delete process.env.RESEND_API_KEY;
+    else process.env.RESEND_API_KEY = originalApiKey;
+  });
   test("validates contact submissions", async () => {
     const result = await callApi({
       method: "POST",

@@ -1,9 +1,10 @@
-﻿import cors from "cors";
+import cors from "cors";
 import express from "express";
 import { existsSync } from "node:fs";
 import { resolve } from "node:path";
 import { caseStudies, companyProfile, insights, services, testimonials } from "./data/content";
 import { listContactSubmissions, saveContactSubmission } from "./lib/contactStore";
+import { sendContactNotification } from "./lib/email";
 import { validateContactPayload } from "./lib/validation";
 
 const app = express();
@@ -98,15 +99,20 @@ app.post("/api/contact", async (request, response, next) => {
     }
 
     const submission = await saveContactSubmission(result.value);
+    const emailResult = await sendContactNotification(result.value);
+    if (!emailResult.sent && emailResult.reason !== "not-configured") {
+      console.warn("Contact email notification was not sent", emailResult);
+    }
+
     response.status(201).json({
       message: "Inquiry received.",
-      submission: { id: submission.id, createdAt: submission.createdAt }
+      submission: { id: submission.id, createdAt: submission.createdAt },
+      email: { forwarded: emailResult.sent }
     });
   } catch (error) {
     next(error);
   }
 });
-
 if (existsSync(indexPath)) {
   app.use(express.static(distPath));
   app.get(/^(?!\/api).*/, (_request, response) => {
