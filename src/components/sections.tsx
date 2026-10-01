@@ -1,6 +1,7 @@
-﻿import { ArrowRight, CheckCircle2 } from "lucide-react";
+import { ArrowRight, CheckCircle2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import type { CSSProperties } from "react";
+import { editableText } from "../content/learningResources";
 import type { CaseStudy, Service, Testimonial } from "../types";
 
 export function PageHero({
@@ -32,11 +33,11 @@ export function ServiceGrid({ services }: { services: Service[] }) {
     <div className="card-grid">
       {services.map((service) => (
         <Link className="feature-card link-card" key={service.slug} to={`/services/${service.slug}`}>
-          <p className="eyebrow">{service.eyebrow}</p>
-          <h3>{service.title}</h3>
-          <p>{service.summary}</p>
+          <p className="eyebrow">{editableText(`services.${service.slug}.eyebrow`, service.eyebrow)}</p>
+          <h3>{editableText(`services.${service.slug}.title`, service.title)}</h3>
+          <p>{editableText(`services.${service.slug}.summary`, service.summary)}</p>
           <span>
-            Explore service <ArrowRight size={16} />
+            {editableText("services.card.action", "Explore service")} <ArrowRight size={16} />
           </span>
         </Link>
       ))}
@@ -86,11 +87,11 @@ export function CtaBand() {
   return (
     <section className="cta-band">
       <div>
-        <p className="eyebrow">Ready for a sharper operation?</p>
-        <h2>Let us build the restaurant system behind your next stage.</h2>
+        <p className="eyebrow">{editableText("shared.cta.eyebrow", "Ready for a sharper operation?")}</p>
+        <h2>{editableText("shared.cta.title", "Let us build the restaurant system behind your next stage.")}</h2>
       </div>
       <Link className="button light" to="/contact">
-        Start a conversation
+        {editableText("shared.cta.button", "Start a conversation")}
       </Link>
     </section>
   );

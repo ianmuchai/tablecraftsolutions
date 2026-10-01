@@ -30,7 +30,9 @@ export type LearningResourceAccessRule = {
 export type SiteTextRecord = {
   id: string;
   page: string;
+  section: string;
   label: string;
+  description: string;
   key: string;
   value: string;
 };

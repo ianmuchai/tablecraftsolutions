@@ -58,9 +58,23 @@ describe("learning resource access controls", () => {
   test("ships default learning resources, access rules, and editable site text records", () => {
     expect(defaultManagedLearningResources.length).toBeGreaterThanOrEqual(3);
     expect(defaultLearningResourceAccessRules.some((rule) => rule.scope === "all")).toBe(true);
+    expect(defaultSiteTextRecords.length).toBeGreaterThanOrEqual(40);
     expect(defaultSiteTextRecords.map((record) => record.page)).toEqual(
-      expect.arrayContaining(["Home", "About", "Services", "Staff Training"])
+      expect.arrayContaining(["Home", "About", "Services", "Service Detail", "Case Studies", "Insights", "Contact", "Dashboard", "Footer"])
     );
+    expect(defaultSiteTextRecords.every((record) => record.description && record.section)).toBe(true);
     expect(resolveSiteText("home.hero.copy")).toContain("standards, systems");
+  });
+
+  test("supports friendly dashboard controls for managing site copy", () => {
+    const source = readFileSync("src/pages/DashboardPage.tsx", "utf8");
+    const css = readFileSync("src/styles.css", "utf8");
+
+    expect(source).toContain("Site Content Manager");
+    expect(source).toContain("contentSearch");
+    expect(source).toContain("selectedContentPage");
+    expect(source).toContain("resetTextRecord");
+    expect(css).toContain(".content-manager-toolbar");
+    expect(css).toContain(".content-page-tabs");
   });
 });

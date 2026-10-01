@@ -7,7 +7,9 @@ import {
   Inbox,
   LockKeyhole,
   RefreshCw,
+  RotateCcw,
   Save,
+  Search,
   Server,
   ShieldCheck,
   Upload,
@@ -21,7 +23,9 @@ import {
   defaultLearningResourceAccessRules,
   defaultManagedLearningResources,
   defaultSiteTextRecords,
+  editableText,
   learningAccessRulesStorageKey,
+  mergeSiteTextRecords,
   learningResourcesStorageKey,
   siteTextStorageKey
 } from "../content/learningResources";
@@ -75,6 +79,8 @@ export function DashboardPage() {
   const [resources, setResources] = useState<ManagedLearningResource[]>(defaultManagedLearningResources);
   const [accessRules, setAccessRules] = useState<LearningResourceAccessRule[]>(defaultLearningResourceAccessRules);
   const [siteTextRecords, setSiteTextRecords] = useState<SiteTextRecord[]>(defaultSiteTextRecords);
+  const [selectedContentPage, setSelectedContentPage] = useState("Home");
+  const [contentSearch, setContentSearch] = useState("");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [resourceDraft, setResourceDraft] = useState({ title: "", summary: "", audience: "Staff training users" });
   const [ruleDraft, setRuleDraft] = useState<Pick<LearningResourceAccessRule, "resourceId" | "scope" | "value">>({
@@ -90,6 +96,23 @@ export function DashboardPage() {
     [accessRules, resources, userProfile]
   );
 
+  const contentPages = useMemo(() => Array.from(new Set(siteTextRecords.map((record) => record.page))), [siteTextRecords]);
+
+  const filteredTextRecords = useMemo(() => {
+    const query = contentSearch.trim().toLowerCase();
+    return siteTextRecords.filter((record) => {
+      const matchesPage = record.page === selectedContentPage;
+      const searchable = `${record.page} ${record.section} ${record.label} ${record.description} ${record.value}`.toLowerCase();
+      return matchesPage && (!query || searchable.includes(query));
+    });
+  }, [contentSearch, selectedContentPage, siteTextRecords]);
+
+  const groupedTextRecords = useMemo(() => {
+    return filteredTextRecords.reduce<Record<string, SiteTextRecord[]>>((groups, record) => {
+      groups[record.section] = [...(groups[record.section] ?? []), record];
+      return groups;
+    }, {});
+  }, [filteredTextRecords]);
   const loadDashboard = async () => {
     setLoading(true);
     setError("");
@@ -108,7 +131,7 @@ export function DashboardPage() {
     setUserProfile(loadStoredProfile());
     setResources(loadJson(learningResourcesStorageKey, defaultManagedLearningResources));
     setAccessRules(loadJson(learningAccessRulesStorageKey, defaultLearningResourceAccessRules));
-    setSiteTextRecords(loadJson(siteTextStorageKey, defaultSiteTextRecords));
+    setSiteTextRecords(mergeSiteTextRecords(loadJson<SiteTextRecord[] | null>(siteTextStorageKey, null)));
   }, []);
 
   const handleAdminLogin = async (event: FormEvent<HTMLFormElement>) => {
@@ -241,15 +264,20 @@ export function DashboardPage() {
     setManagementFeedback("Site text saved. Refresh public pages in this browser to see local edits.");
   };
 
+  const resetTextRecord = (id: string) => {
+    const defaultRecord = defaultSiteTextRecords.find((record) => record.id === id);
+    if (!defaultRecord) return;
+    persistTextRecords(siteTextRecords.map((record) => (record.id === id ? { ...record, value: defaultRecord.value } : record)));
+    setManagementFeedback("Text restored to the original TableCraft wording.");
+  };
+
   return (
     <>
       <section className="dashboard-hero image-hero" style={heroStyle}>
         <div className="container">
-          <p className="eyebrow">Dashboard</p>
-          <h1>TableCraft account workspace</h1>
-          <p>
-            Admins manage learning resources, access, and site text. Users can save a profile and download approved staff-training materials.
-          </p>
+          <p className="eyebrow">{editableText("dashboard.hero.eyebrow", "Dashboard")}</p>
+          <h1>{editableText("dashboard.hero.title", "TableCraft account workspace")}</h1>
+          <p>{editableText("dashboard.hero.copy", "Admins manage learning resources, access, and site text. Users can save a profile and download approved staff-training materials.")}</p>
         </div>
       </section>
 
@@ -430,20 +458,56 @@ export function DashboardPage() {
                 </div>
 
                 <section className="dashboard-panel nested-panel management-panel text-management-panel">
-                  <div className="panel-heading">
-                    <p className="eyebrow">Site text</p>
-                    <h2>Edit relevant page copy</h2>
+                  <div className="panel-heading content-manager-heading">
+                    <div>
+                      <p className="eyebrow">{editableText("dashboard.content.eyebrow", "Site content")}</p>
+                      <h2>{editableText("dashboard.content.title", "Site Content Manager")}</h2>
+                      <p>{editableText("dashboard.content.copy", "Edit the wording visitors see across the public pages. Use the page tabs, search, and reset controls to work quickly without touching code.")}</p>
+                    </div>
+                    <span className="content-count">{filteredTextRecords.length} fields</span>
                   </div>
-                  <div className="text-record-grid">
-                    {siteTextRecords.map((record) => (
-                      <label className="text-record" key={record.id}>
-                        <span>{record.page} - {record.label}</span>
-                        <textarea rows={4} value={record.value} onChange={(event) => updateTextRecord(record.id, event.target.value)} />
-                      </label>
-                    ))}
-                  </div>
-                </section>
 
+                  <div className="content-manager-toolbar">
+                    <label className="content-search">
+                      <Search size={18} />
+                      <input value={contentSearch} onChange={(event) => setContentSearch(event.target.value)} placeholder="Search page text" />
+                    </label>
+                    <div className="content-page-tabs" aria-label="Editable site pages">
+                      {contentPages.map((page) => (
+                        <button className={selectedContentPage === page ? "active" : ""} key={page} type="button" onClick={() => setSelectedContentPage(page)}>
+                          {page}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {filteredTextRecords.length === 0 ? (
+                    <p className="empty-state compact">No editable text matched your search on this page.</p>
+                  ) : (
+                    <div className="content-section-list">
+                      {Object.entries(groupedTextRecords).map(([section, records]) => (
+                        <section className="content-edit-section" key={section}>
+                          <div className="content-section-heading">
+                            <h3>{section}</h3>
+                            <span>{records.length} fields</span>
+                          </div>
+                          <div className="text-record-grid">
+                            {records.map((record) => (
+                              <label className="text-record" key={record.id}>
+                                <span>{record.label}</span>
+                                <small>{record.description}</small>
+                                <textarea rows={record.value.length > 150 ? 5 : 3} value={record.value} onChange={(event) => updateTextRecord(record.id, event.target.value)} />
+                                <button className="text-reset-button" type="button" onClick={() => resetTextRecord(record.id)}>
+                                  <RotateCcw size={15} /> Reset to original
+                                </button>
+                              </label>
+                            ))}
+                          </div>
+                        </section>
+                      ))}
+                    </div>
+                  )}
+                </section>
                 <div className="resource-admin-list">
                   {resources.map((resource) => (
                     <article className="resource-card" key={resource.id}>

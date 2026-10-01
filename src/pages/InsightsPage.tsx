@@ -1,8 +1,9 @@
-﻿import { ArrowRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { getInsights } from "../api/client";
 import { PageHero } from "../components/sections";
+import { editableText } from "../content/learningResources";
 import type { Insight } from "../types";
 
 export function InsightsPage() {
@@ -15,9 +16,9 @@ export function InsightsPage() {
   return (
     <>
       <PageHero
-        eyebrow="Insights"
-        title="Practical thinking for sharper restaurant decisions."
-        copy="Short reads on menu strategy, launch planning, operations, and profitability habits."
+        eyebrow={editableText("insights.hero.eyebrow", "Insights")}
+        title={editableText("insights.hero.title", "Practical thinking for sharper restaurant decisions.")}
+        copy={editableText("insights.hero.copy", "Short reads on menu strategy, launch planning, operations, and profitability habits.")}
         image="/hero-insights.png"
       />
       <section className="section container">

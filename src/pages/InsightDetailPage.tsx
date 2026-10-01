@@ -2,6 +2,7 @@ import { ArrowLeft } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { getInsight } from "../api/client";
+import { editableText } from "../content/learningResources";
 import type { Insight } from "../types";
 import { NotFoundPage } from "./NotFoundPage";
 
@@ -24,7 +25,7 @@ export function InsightDetailPage() {
   return (
     <article className="article-detail container narrow">
       <Link className="back-link" to="/insights">
-        <ArrowLeft size={16} /> Insights
+        <ArrowLeft size={16} /> {editableText("insightDetail.back", "Insights")}
       </Link>
       <p className="eyebrow">{insight.category}</p>
       <h1>{insight.title}</h1>

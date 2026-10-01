@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { getService } from "../api/client";
 import { CtaBand } from "../components/sections";
-import { resolveSiteText } from "../content/learningResources";
+import { editableText } from "../content/learningResources";
 import type { Service } from "../types";
 import { NotFoundPage } from "./NotFoundPage";
 
@@ -46,17 +46,17 @@ export function ServiceDetailPage() {
       <section className="detail-hero">
         <div className="container narrow">
           <Link className="back-link" to="/services">
-            <ArrowLeft size={16} /> Services
+            <ArrowLeft size={16} /> {editableText("serviceDetail.back", "Services")}
           </Link>
-          <p className="eyebrow">{service.eyebrow}</p>
-          <h1>{service.title}</h1>
-          <p>{service.description}</p>
+          <p className="eyebrow">{editableText(`services.${service.slug}.eyebrow`, service.eyebrow)}</p>
+          <h1>{editableText(`services.${service.slug}.title`, service.title)}</h1>
+          <p>{editableText(`services.${service.slug}.description`, service.description)}</p>
         </div>
       </section>
       <section className="detail-grid container">
         <div>
-          <p className="eyebrow">Outcomes</p>
-          <h2>What improves</h2>
+          <p className="eyebrow">{editableText("serviceDetail.outcomes.eyebrow", "Outcomes")}</p>
+          <h2>{editableText("serviceDetail.outcomes.title", "What improves")}</h2>
           <ul className="check-list">
             {service.outcomes.map((item) => (
               <li className="hover-explainer" data-tooltip={outcomeTooltip(service.title, item)} key={item} tabIndex={0}>
@@ -66,8 +66,8 @@ export function ServiceDetailPage() {
           </ul>
         </div>
         <div>
-          <p className="eyebrow">Deliverables</p>
-          <h2>What you receive</h2>
+          <p className="eyebrow">{editableText("serviceDetail.deliverables.eyebrow", "Deliverables")}</p>
+          <h2>{editableText("serviceDetail.deliverables.title", "What you receive")}</h2>
           <ul className="check-list">
             {service.deliverables.map((item) => (
               <li className="hover-explainer" data-tooltip={deliverableTooltip(service, item)} key={item} tabIndex={0}>
@@ -81,9 +81,9 @@ export function ServiceDetailPage() {
       {isStaffTraining && (
         <section className="training-suite container">
           <div className="section-heading">
-            <p className="eyebrow">Training delivery</p>
-            <h2>Choose in-person or virtual staff training.</h2>
-            <p>{resolveSiteText("staffTraining.delivery.copy")}</p>
+            <p className="eyebrow">{editableText("staffTraining.delivery.eyebrow", "Training delivery")}</p>
+            <h2>{editableText("staffTraining.delivery.title", "Choose in-person or virtual staff training.")}</h2>
+            <p>{editableText("staffTraining.delivery.copy", "Staff training can be delivered on site for hands-on operational practice or virtually for guided learning, manager alignment, and follow-up coaching.")}</p>
           </div>
 
           <div className="training-options">
@@ -143,8 +143,8 @@ export function ServiceDetailPage() {
             </article>
 
             <div className="resource-list">
-              <p className="eyebrow">Learning resources</p>
-              <h2>Resources teams can keep using.</h2>
+              <p className="eyebrow">{editableText("staffTraining.resources.eyebrow", "Learning resources")}</p>
+              <h2>{editableText("staffTraining.resources.title", "Resources teams can keep using.")}</h2>
               {service.learningResources?.map((resource) => (
                 <article className="resource-card hover-explainer" data-tooltip={resource.summary} key={resource.title} tabIndex={0}>
                   <BookOpen size={22} />

@@ -3,12 +3,12 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { getServices, getTestimonials } from "../api/client";
 import { CtaBand, ServiceGrid, Testimonials } from "../components/sections";
-import { resolveSiteText } from "../content/learningResources";
+import { editableText } from "../content/learningResources";
 import type { Service, Testimonial } from "../types";
 
 const metrics = [
-  { value: "2018", label: "incorporated for hospitality excellence" },
-  { value: "Vast", label: "founder-led hospitality experience" },
+  { value: "2018", label: editableText("home.metric.incorporation", "incorporated for hospitality excellence") },
+  { value: "Vast", label: editableText("home.metric.experience", "founder-led hospitality experience") },
   { value: "6", label: "consultancy tracks for restaurant growth" }
 ];
 
@@ -87,15 +87,15 @@ export function HomePage() {
           </div>
         </div>
         <div className="hero-content">
-          <p className="eyebrow">Restaurant consultancy</p>
-          <h1>TableCraft Solutions</h1>
-          <p>{resolveSiteText("home.hero.copy")}</p>
+          <p className="eyebrow">{editableText("home.hero.eyebrow", "Restaurant consultancy")}</p>
+          <h1>{editableText("home.hero.title", "TableCraft Solutions")}</h1>
+          <p>{editableText("home.hero.copy", "We help restaurants launch smarter, train confident teams, tighten operations, and turn hospitality ambition into standards, systems, and measurable service excellence.")}</p>
           <div className="hero-actions">
             <Link className="button" to="/contact">
-              Book a consultation
+              {editableText("home.hero.primaryButton", "Book a consultation")}
             </Link>
             <Link className="button ghost" to="/services">
-              Explore services <ArrowRight size={18} />
+              {editableText("home.hero.secondaryButton", "Explore services")} <ArrowRight size={18} />
             </Link>
           </div>
         </div>
@@ -112,20 +112,17 @@ export function HomePage() {
 
       <section className="section container">
         <div className="section-heading">
-          <p className="eyebrow">What we craft</p>
-          <h2>Consulting built around the restaurant's real operating layers.</h2>
+          <p className="eyebrow">{editableText("home.services.eyebrow", "What we craft")}</p>
+          <h2>{editableText("home.services.title", "Consulting built around the restaurant's real operating layers.")}</h2>
         </div>
         <ServiceGrid services={services} />
       </section>
 
       <section className="split-section">
         <div>
-          <p className="eyebrow">How we work</p>
-          <h2>Strategy that reaches the pass, the floor, and the numbers.</h2>
-          <p>
-            TableCraft connects brand, menu, service, staffing, purchasing, and reporting so every layer supports the
-            same commercial goal.
-          </p>
+          <p className="eyebrow">{editableText("home.process.eyebrow", "How we work")}</p>
+          <h2>{editableText("home.process.title", "Strategy that reaches the pass, the floor, and the numbers.")}</h2>
+          <p>{editableText("home.process.copy", "TableCraft connects brand, menu, service, staffing, purchasing, and reporting so every layer supports the same commercial goal.")}</p>
         </div>
         <div className="process-list">
           {[
