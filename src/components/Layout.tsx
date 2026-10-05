@@ -39,32 +39,53 @@ export function Layout() {
   return (
     <div className="site-shell">
       <header className="site-header">
-        <Link className="brand logo-only" to="/" onClick={() => setOpen(false)} aria-label="TableCraft Solutions home">
-          <LogoMark />
-        </Link>
-        <div className="header-actions">
-          {userSession && (
-            <div className="user-badge" aria-label={`Logged in as ${userSession.firstName}`}>
-              <Link to="/dashboard" onClick={() => setOpen(false)}>
-                <UserRound size={16} />
-                <span>{userSession.firstName}</span>
-              </Link>
-              <button type="button" onClick={handleUserLogout} aria-label="Sign out user">
-                <LogOut size={15} />
-              </button>
-            </div>
-          )}
-          <button className="nav-toggle" type="button" aria-label="Toggle navigation" onClick={() => setOpen((value) => !value)}>
-            {open ? <X size={22} /> : <Menu size={22} />}
-          </button>
+        <div className="top-info-bar" aria-label="TableCraft quick contact information">
+          <div className="top-info-inner">
+            <span>
+              <MapPin size={15} /> {contactDetails.location}
+            </span>
+            <a href={contactDetails.phoneHref}>
+              <Phone size={15} /> {contactDetails.phoneDisplay}
+            </a>
+            <a href={contactDetails.emailHref}>
+              <Mail size={15} /> {contactDetails.email}
+            </a>
+            <a href={contactDetails.whatsappUrl} target="_blank" rel="noreferrer">
+              WhatsApp
+            </a>
+            <a href={contactDetails.facebookUrl} target="_blank" rel="noreferrer">
+              Facebook
+            </a>
+          </div>
         </div>
-        <nav className={open ? "site-nav open" : "site-nav"} aria-label="Main navigation">
-          {links.map((link) => (
-            <NavLink key={link.to} to={link.to} onClick={() => setOpen(false)}>
-              {link.label}
-            </NavLink>
-          ))}
-        </nav>
+        <div className="header-main-row">
+          <Link className="brand logo-only" to="/" onClick={() => setOpen(false)} aria-label="TableCraft Solutions home">
+            <LogoMark />
+          </Link>
+          <div className="header-actions">
+            {userSession && (
+              <div className="user-badge" aria-label={`Logged in as ${userSession.firstName}`}>
+                <Link to="/dashboard" onClick={() => setOpen(false)}>
+                  <UserRound size={16} />
+                  <span>{userSession.firstName}</span>
+                </Link>
+                <button type="button" onClick={handleUserLogout} aria-label="Sign out user">
+                  <LogOut size={15} />
+                </button>
+              </div>
+            )}
+            <button className="nav-toggle" type="button" aria-label="Toggle navigation" onClick={() => setOpen((value) => !value)}>
+              {open ? <X size={22} /> : <Menu size={22} />}
+            </button>
+          </div>
+          <nav className={open ? "site-nav open" : "site-nav"} aria-label="Main navigation">
+            {links.map((link) => (
+              <NavLink key={link.to} to={link.to} onClick={() => setOpen(false)}>
+                {link.label}
+              </NavLink>
+            ))}
+          </nav>
+        </div>
       </header>
       <main>
         <Outlet />

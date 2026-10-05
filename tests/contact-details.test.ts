@@ -27,4 +27,20 @@ describe("contactDetails", () => {
     expect(contactPage).toContain("contactDetails.facebookUrl");
     expect(layout).toContain("footer-social-link");
   });
+
+  test("renders a compact top information bar with key contact details", () => {
+    const layout = readFileSync("src/components/layout.tsx", "utf8");
+    const css = readFileSync("src/styles.css", "utf8");
+
+    expect(layout).toContain("top-info-bar");
+    expect(layout).toContain("top-info-inner");
+    expect(layout).toContain("contactDetails.location");
+    expect(layout).toContain("contactDetails.phoneHref");
+    expect(layout).toContain("contactDetails.emailHref");
+    expect(layout).toContain("contactDetails.whatsappUrl");
+    expect(layout).toContain("contactDetails.facebookUrl");
+    expect(css).toContain(".top-info-bar");
+    expect(css).toContain(".top-info-inner");
+    expect(css).toContain("@media (max-width: 760px)");
+  });
 });
