@@ -34,6 +34,8 @@ describe("contactDetails", () => {
 
     expect(layout).toContain("top-info-bar");
     expect(layout).toContain("top-info-inner");
+    expect(layout).toContain("top-info-label");
+    expect(layout.indexOf("top-info-bar")).toBeLessThan(layout.indexOf("site-header"));
     expect(layout).toContain("contactDetails.location");
     expect(layout).toContain("contactDetails.phoneHref");
     expect(layout).toContain("contactDetails.emailHref");

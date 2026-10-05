@@ -59,20 +59,23 @@ textarea {
 }
 
 .top-info-bar {
+  position: relative;
+  z-index: 60;
   background: linear-gradient(90deg, var(--teal-950), #075d67);
   color: #fff;
   font-size: 0.86rem;
   font-weight: 800;
+  border-bottom: 2px solid var(--amber);
 }
 
 .top-info-inner {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: space-between;
   flex-wrap: wrap;
   gap: 8px 18px;
-  min-height: 38px;
-  padding: 7px clamp(18px, 5vw, 64px);
+  min-height: 42px;
+  padding: 8px clamp(18px, 5vw, 64px);
 }
 
 .top-info-inner a,
@@ -85,6 +88,13 @@ textarea {
 
 .top-info-inner a:hover {
   color: var(--amber);
+}
+
+.top-info-label {
+  color: var(--amber);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.78rem;
 }
 
 .header-main-row {
@@ -3271,7 +3281,8 @@ svg {
     line-height: 1.35;
   }
 
-  .top-info-inner span:first-child {
+  .top-info-label,
+  .top-info-inner span:nth-child(2) {
     width: 100%;
   }
 

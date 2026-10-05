@@ -38,26 +38,27 @@ export function Layout() {
 
   return (
     <div className="site-shell">
-      <header className="site-header">
-        <div className="top-info-bar" aria-label="TableCraft quick contact information">
-          <div className="top-info-inner">
-            <span>
-              <MapPin size={15} /> {contactDetails.location}
-            </span>
-            <a href={contactDetails.phoneHref}>
-              <Phone size={15} /> {contactDetails.phoneDisplay}
-            </a>
-            <a href={contactDetails.emailHref}>
-              <Mail size={15} /> {contactDetails.email}
-            </a>
-            <a href={contactDetails.whatsappUrl} target="_blank" rel="noreferrer">
-              WhatsApp
-            </a>
-            <a href={contactDetails.facebookUrl} target="_blank" rel="noreferrer">
-              Facebook
-            </a>
-          </div>
+      <div className="top-info-bar" aria-label="TableCraft quick contact information">
+        <div className="top-info-inner">
+          <span className="top-info-label">TableCraft Solutions</span>
+          <span>
+            <MapPin size={15} /> {contactDetails.location}
+          </span>
+          <a href={contactDetails.phoneHref}>
+            <Phone size={15} /> {contactDetails.phoneDisplay}
+          </a>
+          <a href={contactDetails.emailHref}>
+            <Mail size={15} /> {contactDetails.email}
+          </a>
+          <a href={contactDetails.whatsappUrl} target="_blank" rel="noreferrer">
+            WhatsApp
+          </a>
+          <a href={contactDetails.facebookUrl} target="_blank" rel="noreferrer">
+            Facebook
+          </a>
         </div>
+      </div>
+      <header className="site-header">
         <div className="header-main-row">
           <Link className="brand logo-only" to="/" onClick={() => setOpen(false)} aria-label="TableCraft Solutions home">
             <LogoMark />
