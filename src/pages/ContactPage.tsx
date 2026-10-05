@@ -1,4 +1,4 @@
-import { MapPin, Phone, Send } from "lucide-react";
+import { Mail, MapPin, Phone, Send } from "lucide-react";
 import { FormEvent, useState } from "react";
 import { submitContact } from "../api/client";
 import { PageHero } from "../components/sections";
@@ -55,6 +55,15 @@ export function ContactPage() {
           <div className="direct-contact-list" aria-label="Direct contact details">
             <a href={contactDetails.phoneHref}>
               <Phone size={18} /> Farhan: {contactDetails.phoneDisplay}
+            </a>
+            <a href={contactDetails.emailHref}>
+              <Mail size={18} /> {contactDetails.email}
+            </a>
+            <a href={contactDetails.facebookUrl} target="_blank" rel="noreferrer">
+              <svg aria-hidden="true" viewBox="0 0 24 24" width="18" height="18" focusable="false">
+                <path d="M14.2 8.5V6.9c0-.75.5-.92.86-.92h2.2V2.2L14.2 2.19c-3.4 0-4.18 2.54-4.18 4.16V8.5H7.33v3.9h2.69V22h4.18v-9.6h3.1l.42-3.9H14.2Z" />
+              </svg>
+              Facebook
             </a>
             <span>
               <MapPin size={18} /> {contactDetails.location}

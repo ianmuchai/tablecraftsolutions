@@ -1,4 +1,4 @@
-import { LogOut, MapPin, Menu, Phone, UserRound, X } from "lucide-react";
+import { LogOut, Mail, MapPin, Menu, Phone, UserRound, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link, NavLink, Outlet } from "react-router-dom";
 import { contactDetails } from "../content/contactDetails";
@@ -85,16 +85,27 @@ export function Layout() {
             <a href={contactDetails.phoneHref}>
               <Phone size={16} /> Farhan: {contactDetails.phoneDisplay}
             </a>
+            <a href={contactDetails.emailHref}>
+              <Mail size={16} /> {contactDetails.email}
+            </a>
             <span>
               <MapPin size={16} /> {contactDetails.location}
             </span>
           </div>
-          <a className="footer-social-link" href={contactDetails.tiktokUrl} target="_blank" rel="noreferrer" aria-label="TikTok">
-            <svg aria-hidden="true" viewBox="0 0 24 24" width="18" height="18" focusable="false">
-              <path d="M16.7 3c.27 2.18 1.5 3.48 3.64 3.62v3.04a7.2 7.2 0 0 1-3.56-1.02v6.55c0 3.31-2.18 5.81-5.45 5.81-3.06 0-5.67-2.14-5.67-5.22 0-3.42 3.22-5.94 6.55-5.16v3.25c-1.4-.43-3.38.32-3.38 1.9 0 1.13 1.02 1.9 2.18 1.9 1.33 0 2.25-.78 2.25-2.58V3h3.44Z" />
-            </svg>
-            <span>TikTok</span>
-          </a>
+          <div className="footer-social-row" aria-label="Social links">
+            <a className="footer-social-link" href={contactDetails.facebookUrl} target="_blank" rel="noreferrer" aria-label="Facebook">
+              <svg aria-hidden="true" viewBox="0 0 24 24" width="18" height="18" focusable="false">
+                <path d="M14.2 8.5V6.9c0-.75.5-.92.86-.92h2.2V2.2L14.2 2.19c-3.4 0-4.18 2.54-4.18 4.16V8.5H7.33v3.9h2.69V22h4.18v-9.6h3.1l.42-3.9H14.2Z" />
+              </svg>
+              <span>Facebook</span>
+            </a>
+            <a className="footer-social-link" href={contactDetails.tiktokUrl} target="_blank" rel="noreferrer" aria-label="TikTok">
+              <svg aria-hidden="true" viewBox="0 0 24 24" width="18" height="18" focusable="false">
+                <path d="M16.7 3c.27 2.18 1.5 3.48 3.64 3.62v3.04a7.2 7.2 0 0 1-3.56-1.02v6.55c0 3.31-2.18 5.81-5.45 5.81-3.06 0-5.67-2.14-5.67-5.22 0-3.42 3.22-5.94 6.55-5.16v3.25c-1.4-.43-3.38.32-3.38 1.9 0 1.13 1.02 1.9 2.18 1.9 1.33 0 2.25-.78 2.25-2.58V3h3.44Z" />
+              </svg>
+              <span>TikTok</span>
+            </a>
+          </div>
         </div>
         <nav className="footer-links" aria-label="Footer navigation">
           {links.slice(1).map((link) => (

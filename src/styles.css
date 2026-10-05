@@ -3211,3 +3211,10 @@ svg {
   color: var(--amber);
   outline: none;
 }
+
+.footer-social-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 14px;
+}
