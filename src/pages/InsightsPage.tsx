@@ -19,7 +19,7 @@ export function InsightsPage() {
         eyebrow={editableText("insights.hero.eyebrow", "Insights")}
         title={editableText("insights.hero.title", "Practical thinking for sharper restaurant decisions.")}
         copy={editableText("insights.hero.copy", "Short reads on menu strategy, launch planning, operations, and profitability habits.")}
-        image="/hero-insights.png"
+        image="/hero-insights.webp"
       />
       <section className="section container">
         <div className="article-grid">

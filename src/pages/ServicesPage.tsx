@@ -18,7 +18,7 @@ export function ServicesPage() {
         eyebrow={editableText("services.hero.eyebrow", "Services")}
         title={editableText("services.hero.title", "Consultancy tracks for every layer of restaurant performance.")}
         copy={editableText("services.hero.copy", "Choose a focused project or combine tracks into a deeper operational transformation.")}
-        image="/hero-services.png"
+        image="/hero-services.webp"
       />
       <section className="section container">
         {services.length > 0 ? (

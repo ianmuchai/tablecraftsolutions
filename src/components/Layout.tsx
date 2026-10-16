@@ -1,6 +1,6 @@
-import { LogOut, Mail, MapPin, Menu, Phone, UserRound, X } from "lucide-react";
-import { useEffect, useState } from "react";
-import { Link, NavLink, Outlet } from "react-router-dom";
+import { LogOut, Mail, MapPin, Menu, Pause, Phone, Play, UserRound, X } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { Link, NavLink, Outlet, useLocation } from "react-router-dom";
 import { contactDetails } from "../content/contactDetails";
 import { readStoredUserSession, storeUserSession, userSessionChangedEvent } from "../content/dashboardUsers";
 import type { DashboardUserSession } from "../types";
@@ -18,7 +18,32 @@ const links = [
 
 export function Layout() {
   const [open, setOpen] = useState(false);
+  const [tickerPaused, setTickerPaused] = useState(false);
+  const toggleRef = useRef<HTMLButtonElement>(null);
+  const headerRef = useRef<HTMLElement>(null);
+  const { pathname } = useLocation();
   const [userSession, setUserSession] = useState<DashboardUserSession | null>(null);
+
+  useEffect(() => setOpen(false), [pathname]);
+
+  useEffect(() => {
+    if (!open) return;
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setOpen(false);
+        toggleRef.current?.focus();
+      }
+    };
+    const closeOutside = (event: PointerEvent) => {
+      if (!headerRef.current?.contains(event.target as Node)) setOpen(false);
+    };
+    document.addEventListener("keydown", closeOnEscape);
+    document.addEventListener("pointerdown", closeOutside);
+    return () => {
+      document.removeEventListener("keydown", closeOnEscape);
+      document.removeEventListener("pointerdown", closeOutside);
+    };
+  }, [open]);
 
   useEffect(() => {
     const syncUserSession = () => setUserSession(readStoredUserSession());
@@ -38,27 +63,32 @@ export function Layout() {
 
   return (
     <div className="site-shell">
-      <div className="top-info-bar" aria-label="TableCraft quick contact information">
-        <div className="top-info-inner">
-          <span className="top-info-label">TableCraft Solutions</span>
-          <span>
-            <MapPin size={15} /> {contactDetails.location}
-          </span>
-          <a href={contactDetails.phoneHref}>
-            <Phone size={15} /> {contactDetails.phoneDisplay}
-          </a>
-          <a href={contactDetails.emailHref}>
-            <Mail size={15} /> {contactDetails.email}
-          </a>
-          <a href={contactDetails.whatsappUrl} target="_blank" rel="noreferrer">
-            WhatsApp
-          </a>
-          <a href={contactDetails.facebookUrl} target="_blank" rel="noreferrer">
-            Facebook
-          </a>
+      <a className="skip-link" href="#main-content">Skip to content</a>
+      <div className="top-info-bar" data-paused={tickerPaused} role="region" aria-label="TableCraft quick contact information">
+        <div className="top-info-viewport" id="contact-ticker" tabIndex={0} aria-label="Contact information; pause to scroll manually">
+          <div className="top-info-inner">
+            {[false, true].map((copy) => (
+              <div className={copy ? "top-info-group top-info-copy" : "top-info-group"} key={String(copy)} aria-hidden={copy || undefined}>
+                <span className="top-info-label">TableCraft Solutions</span>
+                <span>Restaurant consultancy</span>
+                <span>
+                  <MapPin className="top-info-icon" size={15} aria-hidden="true" /> {contactDetails.location}
+                </span>
+                <a href={contactDetails.phoneHref} tabIndex={copy ? -1 : undefined}>
+                  <Phone size={15} aria-hidden="true" /> {contactDetails.phoneDisplay}
+                </a>
+                <a href={contactDetails.emailHref} tabIndex={copy ? -1 : undefined}>
+                  <Mail size={15} aria-hidden="true" /> {contactDetails.email}
+                </a>
+              </div>
+            ))}
+          </div>
         </div>
+        <button className="ticker-toggle" type="button" aria-controls="contact-ticker" aria-label={tickerPaused ? "Resume information ticker" : "Pause information ticker"} aria-pressed={tickerPaused} onClick={() => setTickerPaused((paused) => !paused)}>
+          {tickerPaused ? <Play size={14} aria-hidden="true" /> : <Pause size={14} aria-hidden="true" />}
+        </button>
       </div>
-      <header className="site-header">
+      <header className="site-header" ref={headerRef}>
         <div className="header-main-row">
           <Link className="brand logo-only" to="/" onClick={() => setOpen(false)} aria-label="TableCraft Solutions home">
             <LogoMark />
@@ -75,11 +105,11 @@ export function Layout() {
                 </button>
               </div>
             )}
-            <button className="nav-toggle" type="button" aria-label="Toggle navigation" onClick={() => setOpen((value) => !value)}>
+            <button ref={toggleRef} className="nav-toggle" type="button" aria-label={open ? "Close navigation" : "Open navigation"} aria-expanded={open} aria-controls="main-navigation" onClick={() => setOpen((value) => !value)}>
               {open ? <X size={22} /> : <Menu size={22} />}
             </button>
           </div>
-          <nav className={open ? "site-nav open" : "site-nav"} aria-label="Main navigation">
+          <nav id="main-navigation" className={open ? "site-nav open" : "site-nav"} aria-label="Main navigation">
             {links.map((link) => (
               <NavLink key={link.to} to={link.to} onClick={() => setOpen(false)}>
                 {link.label}
@@ -88,7 +118,7 @@ export function Layout() {
           </nav>
         </div>
       </header>
-      <main>
+      <main id="main-content" tabIndex={-1}>
         <Outlet />
       </main>
       <a className="whatsapp-float" href={contactDetails.whatsappUrl} target="_blank" rel="noreferrer" aria-label={contactDetails.whatsappLabel}>

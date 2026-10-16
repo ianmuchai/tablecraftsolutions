@@ -122,7 +122,7 @@ export function DashboardPage() {
     value: "All logged-in staff-training users"
   });
   const [managementFeedback, setManagementFeedback] = useState("");
-  const heroStyle = { "--page-hero-image": "url(/hero-dashboard.png)" } as CSSProperties;
+  const heroStyle = { "--page-hero-image": "url(/hero-dashboard.webp)" } as CSSProperties;
 
   const permittedResources = useMemo(
     () => resources.filter((resource) => canUserDownloadResource(userProfile, resource, accessRules)),

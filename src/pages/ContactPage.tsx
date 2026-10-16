@@ -45,7 +45,7 @@ export function ContactPage() {
         eyebrow={editableText("contact.hero.eyebrow", "Contact")}
         title={editableText("contact.hero.title", "Tell us what your restaurant needs next.")}
         copy={editableText("contact.hero.copy", "Share your goal, challenge, or launch timeline. We will respond with the best starting point.")}
-        image="/hero-contact.png"
+        image="/hero-contact.webp"
       />
       <section className="contact-layout container">
         <div className="contact-panel">

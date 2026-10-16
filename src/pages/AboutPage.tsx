@@ -21,7 +21,7 @@ export function AboutPage() {
         eyebrow={editableText("about.hero.eyebrow", "About TableCraft Solutions")}
         title={editableText("about.hero.title", "Standards, systems, and excellence for stronger restaurant operations.")}
         copy={editableText("about.hero.copy", "We build excellence in hospitality by helping restaurant teams sharpen service, leadership, visibility, productivity, and profitability.")}
-        image="/hero-about.png"
+        image="/hero-about.webp"
       />
       <section className="split-section light about-intro-section">
         <div>

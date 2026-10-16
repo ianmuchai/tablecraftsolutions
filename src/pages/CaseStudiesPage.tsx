@@ -18,7 +18,7 @@ export function CaseStudiesPage() {
         eyebrow={editableText("caseStudies.hero.eyebrow", "Case studies")}
         title={editableText("caseStudies.hero.title", "Result-focused examples from restaurant operating challenges.")}
         copy={editableText("caseStudies.hero.copy", "Representative projects showing how better systems improve clarity, consistency, and margin.")}
-        image="/hero-case-studies.png"
+        image="/hero-case-studies.webp"
       />
       <section className="section container">
         {caseStudies.length > 0 ? <CaseStudyGrid caseStudies={caseStudies} /> : <p className="empty-state">{editableText("caseStudies.empty", "Case studies are loading.")}</p>}

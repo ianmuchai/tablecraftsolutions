@@ -14,7 +14,7 @@ const metrics = [
 
 const heroSlides = [
   {
-    image: "/hero-carousel-restaurant.png",
+    image: "/hero-carousel-restaurant.webp",
     alt: "TableCraft restaurant team welcoming guests inside a modern restaurant"
   }
 ];
@@ -80,6 +80,7 @@ export function HomePage() {
               <img
                 className={index === activeHeroSlide ? "hero-slide active" : "hero-slide"}
                 src={slide.image}
+                fetchPriority={index === 0 ? "high" : "auto"}
                 alt={slide.alt}
                 key={slide.image}
               />
