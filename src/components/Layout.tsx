@@ -20,7 +20,7 @@ export function Layout() {
   const [open, setOpen] = useState(false);
   const [tickerPaused, setTickerPaused] = useState(false);
   const toggleRef = useRef<HTMLButtonElement>(null);
-  const headerRef = useRef<HTMLElement>(null);
+  const navRef = useRef<HTMLElement>(null);
   const { pathname } = useLocation();
   const [userSession, setUserSession] = useState<DashboardUserSession | null>(null);
 
@@ -35,13 +35,16 @@ export function Layout() {
       }
     };
     const closeOutside = (event: PointerEvent) => {
-      if (!headerRef.current?.contains(event.target as Node)) setOpen(false);
+      const target = event.target as Node;
+      if (!navRef.current?.contains(target) && !toggleRef.current?.contains(target)) {
+        setOpen(false);
+      }
     };
     document.addEventListener("keydown", closeOnEscape);
-    document.addEventListener("pointerdown", closeOutside);
+    document.addEventListener("pointerdown", closeOutside, true);
     return () => {
       document.removeEventListener("keydown", closeOnEscape);
-      document.removeEventListener("pointerdown", closeOutside);
+      document.removeEventListener("pointerdown", closeOutside, true);
     };
   }, [open]);
 
@@ -88,7 +91,7 @@ export function Layout() {
           {tickerPaused ? <Play size={14} aria-hidden="true" /> : <Pause size={14} aria-hidden="true" />}
         </button>
       </div>
-      <header className="site-header" ref={headerRef}>
+      <header className="site-header">
         <div className="header-main-row">
           <Link className="brand logo-only" to="/" onClick={() => setOpen(false)} aria-label="TableCraft Solutions home">
             <LogoMark />
@@ -109,7 +112,7 @@ export function Layout() {
               {open ? <X size={22} /> : <Menu size={22} />}
             </button>
           </div>
-          <nav id="main-navigation" className={open ? "site-nav open" : "site-nav"} aria-label="Main navigation">
+          <nav ref={navRef} id="main-navigation" className={open ? "site-nav open" : "site-nav"} aria-label="Main navigation">
             {links.map((link) => (
               <NavLink key={link.to} to={link.to} onClick={() => setOpen(false)}>
                 {link.label}

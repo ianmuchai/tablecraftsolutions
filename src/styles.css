@@ -3402,7 +3402,11 @@ svg {
   }
 
   .site-nav {
-    max-height: calc(100dvh - 112px);
+    top: calc(100% + 6px);
+    right: 14px;
+    left: auto;
+    width: min(256px, calc(100vw - 28px));
+    max-height: min(360px, 55dvh, calc(100dvh - 112px));
     overflow-y: auto;
     overscroll-behavior: contain;
   }
